@@ -1,0 +1,99 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "name": "The Complete Full-Stack Web Development Bootcamp",
+      "description": "Become a Full-Stack Web Developer with just ONE course. HTML, CSS, Javascript, Node, React, PostgreSQL, Web3 and DApps",
+      "tutor": "Donald Trump"
+    },
+    {
+      "id": 2,
+      "name": "Modern JavaScript From The Beginning",
+      "description": "Learn modern ES6+ JavaScript from scratch, with projects and practical examples.",
+      "tutor": "Angela Yu"
+    },
+    {
+      "id": 3,
+      "name": "React - The Complete Guide",
+      "description": "Dive in and learn React.js from basics to advanced concepts, including Redux and Hooks.",
+      "tutor": "Maximilian Schwarzmüller"
+    },
+    {
+      "id": 4,
+      "name": "Node.js, Express, MongoDB & More: The Complete Bootcamp",
+      "description": "Build fast, scalable network applications with Node.js, Express, and MongoDB.",
+      "tutor": "Jonas Schmedtmann"
+    },
+    {
+      "id": 5,
+      "name": "Python for Everybody",
+      "description": "Learn Python from the ground up with hands-on exercises, focusing on data handling and APIs.",
+      "tutor": "Dr. Charles Severance"
+    },
+    {
+      "id": 6,
+      "name": "Build Responsive Real-World Websites with HTML and CSS",
+      "description": "Create modern, responsive websites with HTML5 and CSS3. Perfect for beginners.",
+      "tutor": "Jonas Schmedtmann"
+    },
+    {
+      "id": 7,
+      "name": "The Complete SQL Bootcamp",
+      "description": "Become an expert in SQL and PostgreSQL. Analyze data and manage databases like a pro.",
+      "tutor": "Jose Portilla"
+    },
+    {
+      "id": 8,
+      "name": "Machine Learning A-Z",
+      "description": "Learn Machine Learning algorithms and Python implementation with practical case studies.",
+      "tutor": "Kirill Eremenko"
+    },
+    {
+      "id": 9,
+      "name": "The Ultimate Web Designer & Developer Course",
+      "description": "Learn both design and development: HTML, CSS, JavaScript, UX/UI, and more.",
+      "tutor": "Brad Hussey"
+    },
+    {
+      "id": 10,
+      "name": "Django Full Stack Web Developer Bootcamp",
+      "description": "Build powerful web applications using Python, Django, and Bootstrap.",
+      "tutor": "Jose Portilla"
+    },
+    {
+      "id": 11,
+      "name": "iOS & Swift - The Complete iOS App Development Bootcamp",
+      "description": "Learn to create iOS apps using Swift and Xcode, from beginner to advanced levels.",
+      "tutor": "Angela Yu"
+    },
+    {
+      "id": 12,
+      "name": "The Complete Android App Developer Bootcamp",
+      "description": "Master Android app development with Java and Kotlin, building real-world projects.",
+      "tutor": "Rob Percival"
+    }
+  ],
+  "dashboard": [
+    {
+      "day": "Friday, 7 November 2025",
+      "time": "08:30 AM",
+      "status": "Completed",
+      "course": "Software engineering",
+      "task": "Group project presentation and feedback."
+    },
+    {
+      "day": "Saturday, 8 November 2025",
+      "time": "09:15 AM",
+      "status": "In Progress",
+      "course": "Database optimization",
+      "task": "SQL optimization workshop."
+    },
+    {
+      "day": "Sunday, 9 November 2025",
+      "time": "10:45 AM",
+      "status": "Pending",
+      "course": "Machine Learning",
+      "task": "Lab practice on regression models."
+    }
+  ]
+}

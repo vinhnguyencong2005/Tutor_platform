@@ -1,0 +1,137 @@
+/* ===== LAYOUT ===== */
+main {
+    display: flex;
+    flex: 1;
+}
+
+nav.sidebar {
+    width: 220px;
+    background: var(--sidebar-bg);
+    color: white;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+nav.sidebar h3 {
+    color: white;
+    font-size: 24px;
+    font-family: var(--font-main);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+nav.sidebar a {
+    color: white;
+    font-size: 16px;
+    font-family: var(--font-main);
+    padding: 12px 25px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+nav.sidebar a:hover,
+nav.sidebar a.active {
+    background: var(--accent);
+}
+
+/* ===== CONTENT ===== */
+section.content {
+    flex: 1;
+    padding: 40px;
+}
+
+section.content h1 {
+    text-align: center;
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-family: var(--font-main);
+    color: var(--color-text);
+}
+
+.content .course-list {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.content .course-card {
+  margin: 30px 15px;
+  text-align: left;
+  background-color: #F3E8E8;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  overflow: hidden;
+  min-height: 320px;
+  position: relative;
+  /* margin: 20px; */
+}
+
+.content .inner-course-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 15px;
+  font-family: var(--font-main);
+  color: var(--color-text);
+}
+
+.content .inner-course-desc {
+  font-size: 16px;
+  margin: 15px 15px 15px 15px;
+  font-family: var(--font-main);
+  color: var(--color-text);
+}
+
+.content .inner-course-tutor {
+  font-size: 14px;
+  margin: 0 15px 15px 15px;
+  font-family: var(--font-main);
+  color: var(--color-text);
+}
+
+.content a {
+  margin: 0;
+  padding:0;
+}
+
+.content .course-card .btn-join {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: var(--font-main);
+  border: solid 1px #6F2DCF;
+  color: #6F2DCF;
+  border-radius: 10px;
+}
+
+.content .group-btn {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.content .group-btn .btn-schedule,
+.content .group-btn .btn-add {
+  padding: 16px 30px; 
+  font-size: 24px;
+  font-family: var(--font-main);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.content .group-btn .btn-schedule {
+  background-color: #FF6F61; /* Example color for Scheduling button */
+}
+
+.content .group-btn .btn-add {
+  background-color: #6F2DCF; /* Example color for Add button */
+} 

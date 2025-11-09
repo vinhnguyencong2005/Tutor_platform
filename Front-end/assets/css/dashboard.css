@@ -1,0 +1,80 @@
+/* ===== LAYOUT ===== */
+main {
+    display: flex;
+    flex: 1;
+}
+
+nav.sidebar {
+    width: 220px;
+    background: var(--sidebar-bg);
+    color: white;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+nav.sidebar h3 {
+    color: white;
+    font-size: 24px;
+    font-family: var(--font-main);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+nav.sidebar a {
+    color: white;
+    font-size: 16px;
+    font-family: var(--font-main);
+    padding: 12px 25px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+nav.sidebar a:hover,
+nav.sidebar a.active {
+    background: var(--accent);
+}
+
+/* ===== CONTENT ===== */
+section.content {
+    flex: 1;
+    padding: 40px;
+}
+
+section.content h1 {
+    text-align: center;
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-family: var(--font-main);
+    color: var(--color-text);
+}
+
+.day-block {
+    margin-bottom: 40px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 20px;
+}
+
+.day-header {
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--accent);
+}
+
+.course-item {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+.course-item p {
+    margin: 2px 0;
+}
+
+.time {
+    font-weight: 600;
+    color: #333;
+}
+
