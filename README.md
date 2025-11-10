@@ -1,0 +1,27 @@
+# 🚀 Hướng dẫn chạy dự án
+
+## 🧩 Yêu cầu
+Trước khi bắt đầu, bạn cần cài đặt:
+
+- [Node.js](https://nodejs.org/) (phiên bản mới nhất khuyến khích dùng)
+- npm (đi kèm với Node.js)
+
+---
+
+## 🏗️ Cách chạy dự án Front-end
+
+1. **Tải mã nguồn về**
+   ```bash
+   git clone <link_repo_cua_ban>
+
+2. **Di chuyển vào thư mục Front-end**
+   ```bash
+   cd Front-end
+
+3. **Chạy dự án**
+   ```bash
+   npm start
+
+4. **Chạy với Live Server**
+Click chuột phải vào file html muốn xem giao diện và chọn "Open with Live Server".
+
