@@ -48,19 +48,19 @@
         <div class="inner-title">
             The Complete Full-Stack Web Development Bootcamp
         </div>
-        <div class="inner-tutor">
-            Created by Dr.Donald Trump, Developer and Lead Instructor
-        </div>
     </div>
 
     <!-- Section-three -->
 
     <div class="section-three container my-5">
         <div class="course-section-title">Course Content</div>
+        <button class="btn btn-primary add-section-btn my-3" onclick="addSection()">
+            <i class="fas fa-plus"></i> Section
+        </button>
         <div class="course-section accordion" id="courseAccordion">
 
             <!-- Example section -->
-            <div class="accordion-item">
+            <!-- <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section1">
                     Introduction to HTML
@@ -103,52 +103,7 @@
                         <div class="lecture">Lecture 3: Fonts and Text</div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Section six -->
-    <div class="section-six container my-5">
-        <div class="card p-4 shadow-sm">
-            <div class="inner-title fw-bold mb-4">
-                <span class="text-warning fs-2">★</span>
-                4.7 course rating <span class="text-muted">(455,678 ratings)</span>
-            </div>
-
-            <!-- Elon Musk -->
-            <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Elon Musk</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>awesome well learned teacher, makes one feel like they are being tutored in person, 
-                this course is awesome and I will advice anyone to grab it.</p>
-            </div>
-
-            <!-- Steve Jobs -->
-            <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Steve Jobs</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>Reallt good course. It is very complete, but some parts are outdated. 
-                The React Module (the main one in my opinion) is outdated and I had to learn somewhere else. 
-                But in general the quality is great.</p>
-            </div>
-
-            <!-- Bill Gates -->
-            <div class="border p-3 mb-4 rounded">
-                <h5 class="fw-bold">Bill Gates</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>This course was packed with valuable information. Dr. Donald Trump is an excellent teacher. 
-                I always enjoy his courses. Thanks.</p>
-            </div>
-
-            <!-- Feedback Section -->
-            <div class="input-group border rounded-pill p-2">
-                <input type="text" class="form-control border-0 rounded-pill ps-3" placeholder="Feedback/Rating">
-                <div class="stars mx-3">
-                <span class="text-secondary">☆ ☆ ☆ ☆ ☆</span>
-                </div>
-                <button class="btn btn-primary rounded-pill px-4">Send</button>
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -158,9 +113,6 @@
     <h3 class="inner-title mb-4">Forum</h3>
 
     <!-- Input -->
-    <!-- <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
-      <input type="text" class="form-control border-0 rounded-pill ps-4" placeholder="Join the conversation">
-    </div> -->
     <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
         <input type="text" class="form-control border-0 rounded-pill ps-3" placeholder="Join the conversation">
         <button class="btn btn-primary rounded-pill px-4">Send</button>
@@ -238,6 +190,6 @@
 
 
     <!-- Custom JS -->
-    <script src=""></script>
+    <script src="./../js/enter-course-from-tutor.js"></script>
 </body>
 </html>
