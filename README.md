@@ -14,14 +14,12 @@ Trước khi bắt đầu, bạn cần cài đặt:
    ```bash
    git clone <link_repo_cua_ban>
 
-2. **Di chuyển vào thư mục Front-end**
-   ```bash
-   cd Front-end
+2. **Chạy database**
+Chạy file tutor.sql trong thư mục Tutor_sql
 
 3. **Chạy dự án**
    ```bash
-   npm start
+   node .\backend\server.js
 
 4. **Chạy với Live Server**
 Click chuột phải vào file html muốn xem giao diện và chọn "Open with Live Server".
-
