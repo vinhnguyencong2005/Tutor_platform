@@ -17,9 +17,12 @@ Trước khi bắt đầu, bạn cần cài đặt:
 2. **Chạy database**
 Chạy file tutor.sql trong thư mục Tutor_sql
 
-3. **Chạy dự án**
+3. **Setup connection**
+Vào database.js trong folder backend và nhập mật khẩu database
+
+4. **Chạy dự án**
    ```bash
    node .\backend\server.js
 
-4. **Chạy với Live Server**
+5. **Chạy với Live Server**
 Click chuột phải vào file html muốn xem giao diện và chọn "Open with Live Server".
