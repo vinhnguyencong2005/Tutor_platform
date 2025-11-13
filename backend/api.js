@@ -4,7 +4,7 @@ const { verifyLogin, updateUserProfile } = require('../CRUD/crud_login');
 const { getAllCoursesList } = require('../CRUD/crud_course');
 
 // Login route
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => { // request and response
     try {
         const { email, password } = req.body;
         

@@ -105,6 +105,11 @@ CREATE TABLE material (
     FOREIGN KEY (tutor_courseID, chapter_num) REFERENCES chapter(tutor_courseID, chapter_num)
 );
 
+INSERT INTO material (tutor_courseID, chapter_num, material_title, material_link, type) VALUES
+(1, 1, 'Operating System Concepts - Chapter 1', 'https://os.ecci.ucr.ac.cr/slides/Abraham-Silberschatz-Operating-System-Concepts-10th-2018.pdf', 'PDF'),
+(1, 2, 'Process Management Video Lecture', 'https://www.youtube.com/watch?v=OrM7nZcxXZU', 'Video'),
+(1, 3, 'Concurrency and Deadlocks Notes', 'https://example.com/concurrency_notes.pdf', 'PDF');
+
 CREATE TABLE library_material (
 	material_name VARCHAR(200) NOT NULL,
     Lmaterial_link VARCHAR(300) NOT NULL
@@ -191,4 +196,18 @@ CREATE TABLE waiting_queue (
 );
 
 INSERT INTO waiting_queue VALUES
-(1, 2312345, 'Waiting')
+(1, 2312345, 'Waiting');
+
+CREATE TABLE review_rating (
+    tutor_courseID INT NOT NULL,
+    userID INT NOT NULL,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    review VARCHAR(1000),
+    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
+    FOREIGN KEY (userID) REFERENCES user_profile(userID),
+    PRIMARY KEY (tutor_courseID, userID)
+);
+
+INSERT INTO review_rating (tutor_courseID, userID, rating, review) VALUES
+(1, 2112345, 5, 'This course provided an in-depth understanding of operating systems. The materials were comprehensive and the instructor was very knowledgeable.'),
+(2, 2345678, 4, 'The review sessions were helpful in preparing for the final exam. Would recommend to others.');
