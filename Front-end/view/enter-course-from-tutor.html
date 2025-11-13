@@ -50,107 +50,86 @@
         </div>
     </div>
 
-    <!-- Section-three -->
 
-    <div class="section-three container my-5">
-        <div class="course-section-title">Course Content</div>
-        <button class="btn btn-primary add-section-btn my-3" onclick="addSection()">
-            <i class="fas fa-plus"></i> Section
-        </button>
-        <div class="course-section accordion" id="courseAccordion">
+    <div class="content-container container my-5">
+        <div class="content-header">
+            <h3 class="content-title">Course content</h3>
+            <button class="btn btn-primary rounded-pill px-4" onclick="addSection()">+ Add</button>
+        </div>
 
-            <!-- Example section -->
-            <!-- <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section1">
-                    Introduction to HTML
-                    </button>
-                </h2>
-                <div id="section1" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: What is HTML?</div>
-                        <div class="lecture">Lecture 2: Basic Tags</div>
-                        <div class="lecture">Lecture 3: Links and Images</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section2">
-                    Intermediate HTML
-                    </button>
-                </h2>
-                <div id="section2" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: Tables</div>
-                        <div class="lecture">Lecture 2: Forms</div>
-                        <div class="lecture">Lecture 3: Semantic HTML</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section3">
-                    CSS Basics
-                    </button>
-                </h2>
-                <div id="section3" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: CSS Selectors</div>
-                        <div class="lecture">Lecture 2: Colors and Backgrounds</div>
-                        <div class="lecture">Lecture 3: Fonts and Text</div>
-                    </div>
-                </div>
-            </div> -->
+        <div id="sectionsContainer" class="accordion">
+            <!-- Sections will be added here -->
         </div>
     </div>
 
-    <!-- Section seven -->
+    <!-- Link Selection Modal -->
+    <div id="linkModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">Choose Content Link</div>
+            
+            <div class="modal-input-group">
+                <label class="modal-input-label">Enter URL or choose from below:</label>
+                <input type="text" id="modalLinkInput" class="modal-input" placeholder="https://example.com/content">
+            </div>
 
-    <div class="section-seven container my-5">
-    <h3 class="inner-title mb-4">Forum</h3>
+            <div class="modal-links-section">
+                <div class="modal-links-title">Available Links:</div>
+                <a class="modal-link-item" data-link="https://docs.google.com/document/d/abc123">
+                    <i class="fas fa-file-alt"></i> Syllabus Document
+                </a>
+                <a class="modal-link-item" data-link="https://www.youtube.com/watch?v=xyz456">
+                    <i class="fas fa-video"></i> Video Lecture 1
+                </a>
+                <a class="modal-link-item" data-link="https://github.com/repo/assignment1">
+                    <i class="fas fa-code"></i> Assignment Repository
+                </a>
+                <a class="modal-link-item" data-link="https://drive.google.com/file/d/def789">
+                    <i class="fas fa-file-pdf"></i> Reading Material
+                </a>
+            </div>
 
-    <!-- Input -->
-    <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
-        <input type="text" class="form-control border-0 rounded-pill ps-3" placeholder="Join the conversation">
-        <button class="btn btn-primary rounded-pill px-4">Send</button>
-    </div>
-
-    <!-- Comment 1 -->
-    <div class="comment mb-4">
-      <h6 class="fw-bold">Elon Musk</h6>
-      <p class="comment-text">
-        Awesome well learned teacher, makes one feel like they are being tutored in person,
-        this course is awesome and I will advice anyone to grab it.
-      </p>
-      <div class="reply-btn text-muted small mb-2">
-        <i class="bi bi-reply me-1"></i> Reply
-      </div>
-
-      <!-- Reply -->
-      <div class="reply ps-4 border-start ms-3">
-        <h6 class="fw-bold">Bill Gates</h6>
-        <p>I think Donald Trump should learn DSA.</p>
-        <div class="reply-btn text-muted small">
-          <i class="bi bi-reply me-1"></i> Reply
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-modal btn-save" onclick="saveLinkContent()">Apply</button>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- Comment 2 -->
-    <div class="comment mb-4">
-      <h6 class="fw-bold">Elon Musk</h6>
-      <p class="comment-text">
-        Awesome well learned teacher, makes one feel like they are being tutored in person,
-        this course is awesome and I will advice anyone to grab it.
-      </p>
-      <div class="reply-btn text-muted small">
-        <i class="bi bi-reply me-1"></i> Reply
-      </div>
+
+    <!-- Forum -->
+
+    <div class="container my-5">
+        <div class="forum-header">
+            <h3 class="course-title">Forum</h3>
+        </div>
+
+        <table class="forum-table">
+            <thead>
+                <tr>
+                    <th>Discussion</th>
+                    <th>Creator</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="star-icon">&#9733;</span> <a href="forum.html">Head and Tail nodes in DLinkedList class implementation</a></td>
+                    <td>NGÔ ĐĂNG H.</td>
+                </tr>
+                <tr>
+                    <td><span class="star-icon">&#9733;</span> <a href="forum.html">Head and Tail nodes in DLinkedList class implementation</a></td>
+                    <td>ĐINH TIẾN</td>
+                </tr>
+                <tr>
+                    <td><span class="star-icon">&#9733;</span> <a href="forum.html">Head and Tail nodes in DLinkedList class implementation</a></td>
+                    <td>NGUYỄN MINH H.</td>
+                </tr>
+                <tr>
+                    <td><span class="star-icon">&#9733;</span> <a href="forum.html">Head and Tail nodes in DLinkedList class implementation</a></td>
+                    <td>PHẠM THANH P.</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  </div>
 
 
 

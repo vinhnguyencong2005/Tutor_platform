@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create course</title>
+    <title>Course Name</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -15,7 +15,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="./../assets/css/style.css">
-    <link rel="stylesheet" href="./../assets/css/create-course.css">
+    <link rel="stylesheet" href="./../assets/css/forum.css">
 </head>
 <body>
     
@@ -30,9 +30,9 @@
           <input type="text" placeholder="Search...">
         </div>
 
-        <!-- <div class="inner-login-signup">
+        <div class="inner-login-signup">
           <a href="#" class="button-header-login">Login</a>
-        </div> -->
+        </div>
         <div class="inner-group">
           <a href="#" class="button-header-bell"><i class="fa-solid fa-bell"></i></a>
           <a href="#" class="button-header-profile"><i class="fa-solid fa-user"></i></a>
@@ -41,53 +41,48 @@
     </header>
     <!-- End Header -->
 
+<div class="container mt-5">
+    <h3>Forum</h3>
+</div>
 
-    <div class="course-container my-5">
-        <h1 class="course-title">Create Course</h1>
-        
-        <form id="courseForm">
-            <!-- Name -->
-            <div class="mb-3">
-                <label for="courseName" class="form-label">Name:</label>
-                <input type="text" class="form-control" id="courseName" required>
-            </div>
+<div class="container mb-5">
+    <div class="forum-post my-4">
+        <div class="post-header">
+            Head and Tail nodes in DLinkedList class implementation
+        </div>
+        <div class="post-meta">
+            By NGÔ ĐĂNG HÀO 
+        </div>
+        <div class="post-content">
+            Greetings teachers and seniors,
 
+            I need clarification regarding the indexing in Dlinkedlist. I know that the head and tail nodes are just dummy nodes that don't contain user data. But would their indexes matter in this implementation? 
 
+            For example, if there are 5 nodes other than the head and tail nodes. Would the 'count' for the list be 5 or 7?
 
-            <!-- Description -->
-            <div class="mb-3">
-                <label for="description" class="form-label">Description:</label>
-                <textarea class="form-control textarea-large" id="description" required></textarea>
-            </div>
+            And would the first index (0th element) of the Dlinkedlist be the head node or the one after it and we just ignore all details about head and tail node?
 
-            <!-- Access Rights and Status -->
-            <div class="form-row">
-                <div>
-                    <label for="accessRights" class="form-label">Access Rights:</label>
-                    <select class="form-select" id="accessRights" required>
-                        <option value="everyone" selected>Everyone</option>
-                        <option value="enrolled">Enrolled Students</option>
-                        <option value="private">Private</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="status" class="form-label">Status:</label>
-                    <select class="form-select" id="status" required>
-                        <option value="public" selected>Public</option>
-                        <option value="archived">Private</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Save button -->
-            <div class="save-button-container">
-                <button type="submit" class="btn-save">Save</button>
-            </div>
-        </form>
+            Thank you for reading my question and I hope to hear from you soon.        
+        </div>
+        <a href="#" class="reply"><i class="bi bi-reply me-1"></i>Reply</a>
     </div>
 
+    <div class="forum-post answer">
+        <div class="post-header">
+            Re: Head and Tail nodes in DLinkedList class implementation
+        </div>
+        <div class="post-meta">
+            By THÁI KHÁC QUÂN
+        </div>
+        <div class="post-content">
+            Chào bạn,
 
-     <!-- Start Footer -->
+            Biến count chỉ tính các node có data thôi nhé. Tương tự với index
+        </div>
+    </div>
+</div>
+
+    <!-- Start Footer -->
 
 
     <footer class="footer">
@@ -119,6 +114,6 @@
 
 
     <!-- Custom JS -->
-    <script src="../js/make-schedule.js"></script>
+    <script src="./../js/enter-course-from-tutor.js"></script>
 </body>
 </html>

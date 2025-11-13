@@ -12,7 +12,6 @@ fetch("http://localhost:3000/courses")
                         </div>
                         <div class="inner-course-content">
                             <div class="inner-course-title">${item.name}</div>
-                            <div class="inner-course-tutor">Dr.${item.tutor}</div>
                         </div>
                     </div>
                 </a>
