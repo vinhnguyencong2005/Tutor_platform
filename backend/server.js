@@ -15,6 +15,13 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, '../view')));
 app.use(express.static(path.join(__dirname, '../assets')));
 app.use(express.static(path.join(__dirname, '../js')));
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Root route - redirect to home.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../view/home.html'));
+});
 
 // API routes
 app.use('/api', apiRoutes);

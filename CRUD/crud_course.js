@@ -114,16 +114,15 @@ async function updateCourse(courseID, courseTitle, description, openState) {
  * Enroll user in course
  */
 async function enrollUserInCourse(courseID, userID) {
-    try {
-        const connection = await pool.getConnection();
-        await connection.execute(
-            'INSERT INTO tutor_course_enrollment (tutor_courseID, userID) VALUES (?, ?)',
-            [courseID, userID]
-        );
-        connection.release();
-        return { success: true };
-    } catch (error) {
-        console.error('Error enrolling user:', error);
+    try{
+        const connect = await pool.getConnection();
+        await connect.execute(
+            'INSERT INTO tutor_course_enrollment(tutor_courseID, userID) VALUES(?,?)'[courseID,userID]
+        )
+        connect.release();
+         return {success: true}; 
+    }catch (error) {
+        console.error('Error enrolling user in course:', error);
         throw error;
     }
 }
