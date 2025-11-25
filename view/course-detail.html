@@ -183,11 +183,15 @@
 
             <!-- Feedback Section -->
             <div class="input-group border rounded-pill p-2">
-                <input type="text" class="form-control border-0 rounded-pill ps-3" placeholder="Feedback/Rating">
-                <div class="stars mx-3">
-                <span class="text-secondary">☆ ☆ ☆ ☆ ☆</span>
+                <input type="text" id="feedback-input" class="form-control border-0 rounded-pill ps-3" placeholder="Feedback/Rating">
+                <div class="stars mx-3 d-flex align-items-center" id="star-rating">
+                    <i class="star fa-regular fa-star" data-rating="1"></i>
+                    <i class="star fa-regular fa-star" data-rating="2"></i>
+                    <i class="star fa-regular fa-star" data-rating="3"></i>
+                    <i class="star fa-regular fa-star" data-rating="4"></i>
+                    <i class="star fa-regular fa-star" data-rating="5"></i>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4">Send</button>
+                <button class="btn btn-primary rounded-pill px-4" id="send-feedback-btn">Send</button>
             </div>
         </div>
     </div>
