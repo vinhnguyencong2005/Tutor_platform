@@ -25,8 +25,6 @@ document.getElementById("btn-login").addEventListener("click", async (event) => 
             const currentUser = data.user;
             localStorage.setItem("currentDetail", currentUser.more_detail);
             localStorage.setItem("currentUserID", currentUser.userID);
-            // Also set 'userID' for pages that expect this key
-            localStorage.setItem("userID", currentUser.userID);
             localStorage.setItem("currentUserRole", currentUser.current_role);
             localStorage.setItem("currentUserEmail", currentUser.email);
             localStorage.setItem("currentUserName", currentUser.name);
