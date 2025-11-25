@@ -1,7 +1,7 @@
 // Load managed courses for the currently logged-in user
 (async function() {
     try {
-        const userID = localStorage.getItem('userID');
+        const userID = localStorage.getItem('currentUserID');
         if (!userID) {
             window.location.href = 'login.html';
             return;
@@ -45,4 +45,3 @@
         document.querySelector('.course-list').innerHTML = '<p>Error loading courses. Check console for details.</p>';
     }
 })();
-

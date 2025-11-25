@@ -1,5 +1,5 @@
 // Get userID from localStorage (set during login)
-const userID = localStorage.getItem('userID') || 2312345; // Default for testing
+const userID = localStorage.getItem('currentUserID') || 2312345; // Default for testing
 
 /**
  * Load dashboard overview (stats)

@@ -1,7 +1,7 @@
 (async function() {
     try {
         // Get userID from localStorage; if not present redirect to login
-        const userID = localStorage.getItem('userID');
+        const userID = localStorage.getItem('currentUserID');
         if (!userID) {
             // Redirect to login page so the user can authenticate
             window.location.href = 'login.html';
