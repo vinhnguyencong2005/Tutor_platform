@@ -11,7 +11,7 @@ let courseData = null;
 
 // Check if user owns this course (for lecturers)
 function checkCourseOwnership(course) {
-    if (!userId || userRole !== 'Lecturer') {
+    if (!userId || userRole !== 'Lecturer' || userRole !== 'Senior Undergraduated') {
         return false;
     }
     // Check if current user is the owner

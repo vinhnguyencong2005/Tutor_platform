@@ -109,6 +109,7 @@ INSERT INTO material (tutor_courseID, chapter_num, material_title, material_link
 (1, 1, 'Operating System Concepts - Chapter 1', 'https://os.ecci.ucr.ac.cr/slides/Abraham-Silberschatz-Operating-System-Concepts-10th-2018.pdf', 'PDF'),
 (1, 2, 'Process Management Video Lecture', 'https://www.youtube.com/watch?v=OrM7nZcxXZU', 'Video'),
 (1, 3, 'Concurrency and Deadlocks Notes', 'https://example.com/concurrency_notes.pdf', 'PDF');
+
 CREATE TABLE library_material (
 	material_name VARCHAR(200) NOT NULL,
     Lmaterial_link VARCHAR(300) NOT NULL
