@@ -4,7 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const { verifyLogin, updateUserProfile } = require('../CRUD/crud_login');
 const { getAllCoursesList, getCourseById, enrollUserInCourse } = require('../CRUD/crud_course');
-const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addChapter } = require('../CRUD/crud_course_content');
+const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addSection } = require('../CRUD/crud_course_content');
+const { getForumThreads, getForumThreadDetail, createForumThread, addForumAnswer, deleteForumThread, deleteForumAnswer, createFollowUpQuestion, getFollowUpQuestions } = require('../CRUD/crud_forum');
 const pool = require('./database');
 
 // Configure multer for file uploads
@@ -309,4 +310,103 @@ router.post('/rate-course', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ==================== FORUM ROUTES ====================
+
+// Get all forum threads for a course
+router.get('/course/:courseId/forum/threads', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const threads = await getForumThreads(courseId);
+        res.json({ success: true, threads });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get a specific forum thread with all answers
+router.get('/course/:courseId/forum/threads/:threadId', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        const threadDetail = await getForumThreadDetail(threadId);
+        res.json({ success: true, data: threadDetail });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create a new forum thread (student asks a question)
+router.post('/course/:courseId/forum/threads', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { questionBody } = req.body;
+        
+        if (!questionBody || questionBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Question body is required' });
+        }
+        
+        const threadId = await createForumThread(courseId, questionBody);
+        res.json({ success: true, threadId, message: 'Forum thread created successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Add a reply to a forum thread (tutor answers)
+router.post('/course/:courseId/forum/threads/:threadId/reply', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        const { answerBody } = req.body;
+        
+        if (!answerBody || answerBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Answer body is required' });
+        }
+        
+        const answerId = await addForumAnswer(threadId, answerBody);
+        res.json({ success: true, answerId, message: 'Reply added successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a forum thread
+router.delete('/course/:courseId/forum/threads/:threadId', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        await deleteForumThread(threadId);
+        res.json({ success: true, message: 'Forum thread deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a forum answer
+router.delete('/course/:courseId/forum/answers/:answerId', async (req, res) => {
+    try {
+        const { answerId } = req.params;
+        await deleteForumAnswer(answerId);
+        res.json({ success: true, message: 'Forum answer deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create a follow-up question on a thread
+// Create a follow-up question to a tutor answer
+router.post('/course/:courseId/forum/answers/:answerId/followup', async (req, res) => {
+    try {
+        const { answerId } = req.params;
+        const { followupBody } = req.body;
+        
+        if (!followupBody || followupBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Follow-up question is required' });
+        }
+        
+        const followUpId = await createFollowUpQuestion(answerId, followupBody);
+        res.json({ success: true, followUpId, message: 'Follow-up question created successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;

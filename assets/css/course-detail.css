@@ -241,6 +241,42 @@
   letter-spacing: 3px;
 }
 
+/* Star rating styles */
+.section-six .stars {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.section-six .star {
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6c757d;
+  margin: 0;
+  padding: 0 2px;
+}
+
+.section-six .star:hover {
+  transform: scale(1.2);
+}
+
+.section-six .star.fa-solid {
+  color: #ffc107 !important;
+}
+
+.section-six .star.fa-regular {
+  color: #6c757d;
+}
+
+.section-six .input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
 .section-six .input-group {
   background-color: #f8f9fa;
 }

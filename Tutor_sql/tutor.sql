@@ -132,7 +132,9 @@ CREATE TABLE forum_thread (
     createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	tutor_courseID INT NOT NULL,
     inner_body VARCHAR(2000),
-    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID)
+    parent_forumID INT DEFAULT NULL,
+    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
+    FOREIGN KEY (parent_forumID) REFERENCES forum_thread(forumID)
 );
 
 INSERT INTO forum_thread (tutor_courseID, inner_body) VALUES
@@ -146,6 +148,14 @@ CREATE TABLE forum_answer (
 	answerID INT AUTO_INCREMENT PRIMARY KEY,
     answer_body VARCHAR(2000),
     FOREIGN KEY (forumID) REFERENCES forum_thread(forumID)
+);
+
+CREATE TABLE forum_answer_followup (
+	followupID INT AUTO_INCREMENT PRIMARY KEY,
+	answerID INT NOT NULL,
+    followup_body VARCHAR(2000),
+    createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (answerID) REFERENCES forum_answer(answerID)
 );
 
 INSERT INTO forum_answer (forumID, answer_body) VALUES

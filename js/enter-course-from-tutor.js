@@ -401,6 +401,113 @@ function deleteMaterial(chapterNum, materialLink) {
     }
 }
 
+// =============== FORUM FUNCTIONS ===============
+
+// Load forum questions for display
+async function loadForumQuestions() {
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`);
+        const data = await response.json();
+
+        if (data.success && data.threads) {
+            displayForumQuestions(data.threads);
+        } else {
+            document.getElementById('forumQuestionsList').innerHTML = '<p class="text-muted">No questions yet.</p>';
+        }
+    } catch (error) {
+        console.error('Error loading forum questions:', error);
+        document.getElementById('forumQuestionsList').innerHTML = '<p class="text-danger">Error loading forum.</p>';
+    }
+}
+
+// Display forum questions as clickable items
+function displayForumQuestions(threads) {
+    const container = document.getElementById('forumQuestionsList');
+    container.innerHTML = '';
+
+    if (threads.length === 0) {
+        container.innerHTML = '<p class="text-muted">No questions yet.</p>';
+        return;
+    }
+
+    threads.forEach(thread => {
+        const date = new Date(thread.createDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'comment mb-4';
+        questionDiv.style.cursor = 'pointer';
+        questionDiv.onclick = () => viewForumDetail(thread.forumID);
+        
+        questionDiv.innerHTML = `
+            <h6 class="fw-bold" style="color: #667eea;">Question</h6>
+            <p class="comment-text">${escapeHtml(thread.inner_body)}</p>
+            <div class="reply-btn text-muted small">
+                <i class="bi bi-reply me-1"></i> View & Reply - ${formattedDate}
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    });
+}
+
+// Submit new forum question
+async function submitForumQuestion() {
+    const input = document.getElementById('forumInput');
+    const questionBody = input.value.trim();
+
+    if (!questionBody) {
+        alert('Please enter your question');
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ questionBody })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            input.value = '';
+            await loadForumQuestions(); // Reload to show new question
+            // Success - no error message needed
+        } else {
+            alert('Error posting question: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error submitting question:', error);
+        alert('Error posting question. Please try again.');
+    }
+}
+
+// View forum question detail (go to detail page)
+function viewForumDetail(threadId) {
+    window.location.href = `forum-detail.html?courseId=${courseId}&threadId=${threadId}`;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================
 // PAGE INITIALIZATION
 // ============================================
@@ -408,4 +515,5 @@ function deleteMaterial(chapterNum, materialLink) {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadCourseData();
+    loadForumQuestions();
 });

@@ -11,7 +11,7 @@ let courseData = null;
 
 // Check if user owns this course (for lecturers)
 function checkCourseOwnership(course) {
-    if (!userId || userRole !== 'Lecturer') {
+    if (!userId || (userRole !== 'Lecturer' && userRole !== 'Senior Undergraduated')) {
         return false;
     }
     // Check if current user is the owner
@@ -182,3 +182,131 @@ async function enrollCourse() {
 
 // Load course details when page loads
 loadCourseDetail();
+
+// ============================================
+// RATING & FEEDBACK SYSTEM
+// ============================================
+
+let rating = 0; // Store the current rating
+
+// Initialize star rating functionality
+function initializeStarRating() {
+    const stars = document.querySelectorAll('.star');
+    const feedbackInput = document.getElementById('feedback-input');
+    const sendBtn = document.getElementById('send-feedback-btn');
+    
+    if (!stars.length) return;
+    
+    // Add click event to each star
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            rating = parseInt(this.getAttribute('data-rating'));
+            updateStars(rating);
+        });
+        
+        // Add hover effect
+        star.addEventListener('mouseenter', function() {
+            const hoverRating = parseInt(this.getAttribute('data-rating'));
+            updateStars(hoverRating);
+        });
+    });
+    
+    // Reset to current rating when mouse leaves
+    const starContainer = document.getElementById('star-rating');
+    if (starContainer) {
+        starContainer.addEventListener('mouseleave', function() {
+            updateStars(rating);
+        });
+    }
+    
+    // Handle send button click
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function() {
+            const feedback = feedbackInput ? feedbackInput.value.trim() : '';
+            
+            if (rating === 0) {
+                alert('Please select a rating (1-5 stars)');
+                return;
+            }
+            
+            if (feedback === '') {
+                alert('Please write your feedback');
+                return;
+            }
+            
+            // Call function to send feedback and rating to database
+            sendFeedbackToDatabase(feedback, rating);
+        });
+    }
+}
+
+// Update star display (filled or empty)
+function updateStars(count) {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        if (index < count) {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid', 'text-warning');
+        } else {
+            star.classList.remove('fa-solid', 'text-warning');
+            star.classList.add('fa-regular', 'text-secondary');
+        }
+    });
+}
+
+// Send feedback and rating to database
+async function sendFeedbackToDatabase(feedback, rating) {
+    if (!userId) {
+        alert('Please log in to submit feedback');
+        return;
+    }
+    
+    if (!courseId) {
+        alert('Course information not found');
+        return;
+    }
+    
+    console.log('Sending feedback to database:');
+    console.log('Course ID:', courseId);
+    console.log('User ID:', userId);
+    console.log('Rating:', rating);
+    console.log('Feedback:', feedback);
+    
+    try {
+        // TODO: Replace with your actual API endpoint
+        const response = await fetch('http://localhost:3000/api/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                courseId: courseId,
+                userId: userId,
+                rating: rating,
+                feedback: feedback
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Thank you for your feedback!');
+            // Reset form
+            document.getElementById('feedback-input').value = '';
+            rating = 0;
+            updateStars(0);
+        } else {
+            alert('Failed to submit feedback: ' + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        alert('Error submitting feedback. Please try again.');
+    }
+}
+
+// Initialize star rating when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeStarRating);
+} else {
+    initializeStarRating();
+}

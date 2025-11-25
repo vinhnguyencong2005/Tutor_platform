@@ -167,13 +167,18 @@ function displayMaterials(chapterNum, materials, bodyContent) {
 async function loadRatingsAndReviews() {
     try {
         const response = await fetch(`http://localhost:3000/api/course/${courseId}/reviews`);
+        if (!response.ok) {
+            console.warn("Reviews endpoint not available");
+            return; // Silently return if endpoint doesn't exist
+        }
         const data = await response.json();
 
         if (data.success && data.reviews) {
             displayReviews(data.reviews, data.averageRating, data.ratingCount);
         }
     } catch (error) {
-        console.error("Error loading reviews:", error);
+        console.warn("Error loading reviews (using defaults):", error);
+        // Use default values if reviews can't be loaded
     }
 }
 
@@ -250,78 +255,127 @@ async function submitReview() {
     }
 }
 
-// Handle forum posts
-async function submitForumPost() {
-    const forumInput = document.querySelector('.section-seven .input-group input[placeholder="Join the conversation"]');
-    const message = forumInput?.value || '';
 
-    if (!message) {
-        alert("Please enter a message");
+// ============================================
+// RATING & FEEDBACK SYSTEM
+// ============================================
+
+let rating = 0; // Store the current rating
+
+// Initialize star rating functionality
+function initializeStarRating() {
+    const stars = document.querySelectorAll('.star');
+    const feedbackInput = document.getElementById('feedback-input');
+    const sendBtn = document.getElementById('send-feedback-btn');
+    
+    if (!stars.length) return;
+    
+    // Add click event to each star
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            rating = parseInt(this.getAttribute('data-rating'));
+            updateStars(rating);
+        });
+        
+        // Add hover effect
+        star.addEventListener('mouseenter', function() {
+            const hoverRating = parseInt(this.getAttribute('data-rating'));
+            updateStars(hoverRating);
+        });
+    });
+    
+    // Reset to current rating when mouse leaves
+    const starContainer = document.getElementById('star-rating');
+    if (starContainer) {
+        starContainer.addEventListener('mouseleave', function() {
+            updateStars(rating);
+        });
+    }
+    
+    // Handle send button click
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function() {
+            const feedback = feedbackInput ? feedbackInput.value.trim() : '';
+            
+            if (rating === 0) {
+                alert('Please select a rating (1-5 stars)');
+                return;
+            }
+            
+            if (feedback === '') {
+                alert('Please write your feedback');
+                return;
+            }
+            
+            // Call function to send feedback and rating to database
+            sendFeedbackToDatabase(feedback, rating);
+        });
+    }
+}
+
+// Update star display (filled or empty)
+function updateStars(count) {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        if (index < count) {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid', 'text-warning');
+        } else {
+            star.classList.remove('fa-solid', 'text-warning');
+            star.classList.add('fa-regular', 'text-secondary');
+        }
+    });
+}
+
+// Send feedback and rating to database
+async function sendFeedbackToDatabase(feedback, rating) {
+    if (!userId) {
+        alert('Please log in to submit feedback');
         return;
     }
-
+    
+    if (!courseId) {
+        alert('Course information not found');
+        return;
+    }
+    
+    console.log('Sending feedback to database:');
+    console.log('Course ID:', courseId);
+    console.log('User ID:', userId);
+    console.log('Rating:', rating);
+    console.log('Feedback:', feedback);
+    
     try {
-        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum`, {
+        // TODO: Replace with your actual API endpoint
+        const response = await fetch('http://localhost:3000/api/feedback', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                user_id: userId,
-                message: message
+                courseId: courseId,
+                userId: userId,
+                rating: rating,
+                feedback: feedback
             })
         });
-
+        
         const data = await response.json();
-
+        
         if (data.success) {
-            forumInput.value = '';
-            loadForumPosts(); // Reload forum
+            alert('Thank you for your feedback!');
+            // Reset form
+            document.getElementById('feedback-input').value = '';
+            rating = 0;
+            updateStars(0);
+            // Reload ratings and reviews
+            loadRatingsAndReviews();
         } else {
-            alert("Error posting message");
+            alert('Failed to submit feedback: ' + (data.message || 'Unknown error'));
         }
     } catch (error) {
-        console.error("Error posting to forum:", error);
-        alert("Error posting message. Please try again.");
-    }
-}
-
-// Load forum posts
-async function loadForumPosts() {
-    try {
-        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum`);
-        const data = await response.json();
-
-        if (data.success && data.posts) {
-            displayForumPosts(data.posts);
-        }
-    } catch (error) {
-        console.error("Error loading forum posts:", error);
-    }
-}
-
-// Display forum posts
-function displayForumPosts(posts) {
-    const forumContainer = document.querySelector('.section-seven');
-    if (!forumContainer) return;
-
-    // Find comments container and replace with new posts
-    const commentsContainer = forumContainer.querySelector('.comment');
-    if (commentsContainer) {
-        commentsContainer.parentElement.innerHTML = '';
-
-        posts.forEach(post => {
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment mb-4';
-            commentDiv.innerHTML = `
-                <h6 class="fw-bold">${post.user_name || 'Anonymous'}</h6>
-                <p class="comment-text">${post.message || post.post_text}</p>
-                <div class="reply-btn text-muted small mb-2">
-                    <i class="bi bi-reply me-1"></i> Reply
-                </div>
-            `;
-            commentsContainer.parentElement.appendChild(commentDiv);
-        });
+        console.error('Error submitting feedback:', error);
+        alert('Error submitting feedback. Please try again.');
     }
 }
 
@@ -334,7 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load initial data
     loadCourseDetails();
     loadRatingsAndReviews();
-    loadForumPosts();
+    loadForumQuestions();
+    
+    // Initialize star rating system
+    initializeStarRating();
 
     // Setup button handlers
     const sendReviewBtn = document.querySelector('.section-six .btn-primary');
@@ -344,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sendForumBtn = document.querySelector('.section-seven .btn-primary');
     if (sendForumBtn) {
-        sendForumBtn.addEventListener('click', submitForumPost);
+        sendForumBtn.addEventListener('click', submitForumQuestion);
     }
 
     // Profile button
@@ -384,4 +441,111 @@ async function rateCourse(rating) {
         console.error("Error submitting rating:", error);
         alert("Error submitting rating. Please try again.");
     }
+}
+
+// =============== FORUM FUNCTIONS ===============
+
+// Load forum questions for display
+async function loadForumQuestions() {
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`);
+        const data = await response.json();
+
+        if (data.success && data.threads) {
+            displayForumQuestions(data.threads);
+        } else {
+            document.getElementById('forumQuestionsList').innerHTML = '<p class="text-muted">No questions yet. Be the first to ask!</p>';
+        }
+    } catch (error) {
+        console.error('Error loading forum questions:', error);
+        document.getElementById('forumQuestionsList').innerHTML = '<p class="text-danger">Error loading forum.</p>';
+    }
+}
+
+// Display forum questions as clickable items
+function displayForumQuestions(threads) {
+    const container = document.getElementById('forumQuestionsList');
+    container.innerHTML = '';
+
+    if (threads.length === 0) {
+        container.innerHTML = '<p class="text-muted">No questions yet. Be the first to ask!</p>';
+        return;
+    }
+
+    threads.forEach(thread => {
+        const date = new Date(thread.createDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'comment mb-4';
+        questionDiv.style.cursor = 'pointer';
+        questionDiv.onclick = () => viewForumDetail(thread.forumID);
+        
+        questionDiv.innerHTML = `
+            <h6 class="fw-bold" style="color: #667eea;">Question</h6>
+            <p class="comment-text">${escapeHtml(thread.inner_body)}</p>
+            <div class="reply-btn text-muted small">
+                <i class="bi bi-reply me-1"></i> View Replies - ${formattedDate}
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    });
+}
+
+// Submit new forum question
+async function submitForumQuestion() {
+    const input = document.getElementById('forumInput');
+    const questionBody = input.value.trim();
+
+    if (!questionBody) {
+        alert('Please enter your question');
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ questionBody })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            input.value = '';
+            await loadForumQuestions(); // Reload to show new question
+            // Success - no error message needed
+        } else {
+            alert('Error posting question: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error submitting question:', error);
+        alert('Error posting question. Please try again.');
+    }
+}
+
+// View forum question detail (go to detail page)
+function viewForumDetail(threadId) {
+    window.location.href = `forum-detail.html?courseId=${courseId}&threadId=${threadId}`;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
