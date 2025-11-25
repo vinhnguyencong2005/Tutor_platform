@@ -60,15 +60,14 @@ section.content h1 {
 }
 
 .content .course-card {
-  margin: 30px 15px;
+  margin: 15px 15px;
   text-align: left;
-  background-color: #F3E8E8;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  min-height: 320px;
+  min-height: 300px;
   position: relative;
-  /* margin: 20px; */
 }
 
 .content .inner-course-title {
@@ -98,16 +97,15 @@ section.content h1 {
   padding:0;
 }
 
-.content .course-card .btn-join {
-  position: absolute;
-  right: 15px;
-  bottom: 15px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-family: var(--font-main);
-  border: solid 1px #6F2DCF;
-  color: #6F2DCF;
-  border-radius: 10px;
+.content a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.content .inner-course-access {
+  font-size: 12px;
+  text-align: center;
+  display: inline-block;
 }
 
 .content .group-btn {
