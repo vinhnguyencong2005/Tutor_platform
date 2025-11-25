@@ -132,7 +132,37 @@ module.exports = {
     getAllCoursesList,
     getCourseById,
     getEnrolledCourses,
+    getManagedCourses,
     createCourse,
     updateCourse,
     enrollUserInCourse
 };
+
+/**
+ * Get courses managed by a specific owner (tutor)
+ */
+async function getManagedCourses(ownerID) {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.execute(`
+            SELECT 
+                tc.tutor_courseID,
+                tc.course_title as name,
+                tc.description,
+                up.name as tutor,
+                tc.open_state,
+                COUNT(tce.userID) as enrolledCount
+            FROM tutor_course tc
+            LEFT JOIN user_profile up ON tc.ownerID = up.userID
+            LEFT JOIN tutor_course_enrollment tce ON tc.tutor_courseID = tce.tutor_courseID
+            WHERE tc.ownerID = ?
+            GROUP BY tc.tutor_courseID
+            ORDER BY tc.tutor_courseID DESC
+        `, [ownerID]);
+        connection.release();
+        return rows;
+    } catch (error) {
+        console.error('Error fetching managed courses:', error);
+        throw error;
+    }
+}
