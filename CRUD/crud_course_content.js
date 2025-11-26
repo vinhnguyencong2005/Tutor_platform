@@ -150,6 +150,25 @@ async function deleteMaterial(courseID, chapterNum, material_link) {
     }
 }
 
+/**
+ * Add a new schedule for a course
+ */
+async function addSchedule(courseID, scheduleTitle, scheduleContent, startDate, endDate, location) {
+    try {
+        const connection = await pool.getConnection();
+        const [result] = await connection.execute(`
+            INSERT INTO schedule (tutor_courseID, schedule_title, schedule_content, start_date, end_date, location)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [courseID, scheduleTitle, scheduleContent, startDate, endDate, location]);
+        connection.release();
+        console.log(`Schedule added: course=${courseID}, title=${scheduleTitle}`);
+        return { success: true, affectedRows: result.affectedRows };
+    } catch (error) {
+        console.error('Error adding schedule:', error);
+        throw error;
+    }
+}
+
 // export the new functions
 module.exports = {
     getChaptersByCourse,
@@ -158,5 +177,6 @@ module.exports = {
     getScheduleByCourse,
     addMaterial,
     deleteMaterial,
-    addSection
+    addSection,
+    addSchedule
 };
