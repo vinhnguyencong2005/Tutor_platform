@@ -23,7 +23,7 @@
     <header class="header">
       <div class="inner-wrap">
         <div class="inner-logo">
-          <a href="#"><img src="../assets/images/01_logobachkhoasang (3).png" alt="Logo" width="100px" height="auto"></a>
+          <a href="home.html"><img src="../assets/images/01_logobachkhoasang (3).png" alt="Logo" width="100px" height="auto"></a>
         </div>
         <div class="inner-search-box">
           <i class="fa fa-search"></i>
@@ -35,7 +35,7 @@
         </div> -->
         <div class="inner-group">
           <a href="#" class="button-header-bell"><i class="fa-solid fa-bell"></i></a>
-          <a href="#" class="button-header-profile"><i class="fa-solid fa-user"></i></a>
+          <a href="profile.html" class="button-header-profile"><i class="fa-solid fa-user"></i></a>
         </div>
       </div>
     </header>
@@ -46,36 +46,35 @@
         <h1 class="course-title">Create Course</h1>
         
         <form id="courseForm">
-            <!-- Name -->
+            <!-- Course Name -->
             <div class="mb-3">
-                <label for="courseName" class="form-label">Name:</label>
-                <input type="text" class="form-control" id="courseName" required>
+                <label for="courseName" class="form-label">Course Name:</label>
+                <input type="text" class="form-control" id="courseName" placeholder="Enter course name" required>
             </div>
-
-           
 
             <!-- Description -->
             <div class="mb-3">
                 <label for="description" class="form-label">Description:</label>
-                <textarea class="form-control textarea-large" id="description" required></textarea>
+                <textarea class="form-control textarea-large" id="description" placeholder="Enter course description" rows="6" required></textarea>
             </div>
 
-            <!-- Access Rights and Status -->
+            <!-- Access Rights / Open State -->
             <div class="form-row">
                 <div>
-                    <label for="accessRights" class="form-label">Access Rights:</label>
-                    <select class="form-select" id="accessRights" required>
-                        <option value="everyone" selected>Everyone</option>
-                        <option value="enrolled">Enrolled Students</option>
-                        <option value="private">Private</option>
+                    <label for="openState" class="form-label">Access Rights:</label>
+                    <select class="form-select" id="openState" required>
+                        <option value="" selected disabled>Select access level...</option>
+                        <option value="Open">Open (Everyone can access)</option>
+                        <option value="Permission">Permission (Need approval)</option>
+                        <option value="Private">Private (Only invited)</option>
                     </select>
                 </div>
-                
             </div>
 
             <!-- Save button -->
             <div class="save-button-container">
-                <button type="submit" class="btn-save">Save</button>
+                <button type="submit" class="btn-save">Create Course</button>
+                <a href="my-managed-courses.html" class="btn-cancel">Cancel</a>
             </div>
         </form>
     </div>
@@ -113,6 +112,6 @@
 
 
     <!-- Custom JS -->
-    <script src="../js/make-schedule.js"></script>
+    <script src="../js/create-course.js"></script>
 </body>
 </html>
