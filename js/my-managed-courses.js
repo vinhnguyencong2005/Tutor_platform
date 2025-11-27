@@ -53,6 +53,11 @@
                 localStorage.setItem("course_id", courseId);
             });
         });
+
+        // Add click listener for Scheduling button
+        document.getElementById('scheduleBtn').addEventListener('click', () => {
+            window.location.href = 'make-schedule.html';
+        });
     } catch (error) {
         console.error('Error loading managed courses:', error);
         document.querySelector('.course-list').innerHTML = '<p>Error loading courses. Check console for details.</p>';

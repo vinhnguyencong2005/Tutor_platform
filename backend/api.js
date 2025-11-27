@@ -3,8 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { verifyLogin, updateUserProfile } = require('../CRUD/crud_login');
-const { getAllCoursesList, getCourseById, enrollUserInCourse } = require('../CRUD/crud_course');
-const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addSection } = require('../CRUD/crud_course_content');
+const { getAllCoursesList, getCourseById, enrollUserInCourse, createCourse, getManagedCourses } = require('../CRUD/crud_course');
+const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addSection, deleteSection, addSchedule } = require('../CRUD/crud_course_content');
 const { getForumThreads, getForumThreadDetail, createForumThread, addForumAnswer, deleteForumThread, deleteForumAnswer, createFollowUpQuestion, getFollowUpQuestions } = require('../CRUD/crud_forum');
 const { 
     getDashboardOverview, 
@@ -192,6 +192,26 @@ router.post('/course/:courseId/chapter', async (req, res) => {
             res.json({ success: true, message: 'Chapter created successfully' });
         } else {
             res.status(500).json({ success: false, message: 'Failed to create chapter' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a chapter/section
+router.delete('/course/:courseId/chapter/:chapterNum', async (req, res) => {
+    try {
+        const { courseId, chapterNum } = req.params;
+
+        if (!courseId || !chapterNum) {
+            return res.status(400).json({ success: false, message: 'courseId and chapterNum are required' });
+        }
+
+        const deleted = await deleteSection(courseId, chapterNum);
+        if (deleted) {
+            res.json({ success: true, message: 'Chapter deleted successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Chapter not found' });
         }
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -468,6 +488,139 @@ router.get('/dashboard/course/:courseID/chapter/:chapterNum/materials', async (r
         const materials = await getChapterMaterials(courseID, chapterNum);
         res.json({ success: true, materials });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// ==================== Schedule Management ====================
+/**
+ * POST /api/schedule/create
+ * Create a new schedule for a course
+ */
+router.post('/schedule/create', async (req, res) => {
+    try {
+        const { tutor_courseID, schedule_title, schedule_content, start_date, end_date, location } = req.body;
+        
+        // Validation: Check required fields
+        if (!tutor_courseID || !schedule_title || !schedule_content || !start_date || !end_date || !location) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+        
+        // Validation: Check if start_date is before end_date
+        if (start_date >= end_date) {
+            return res.status(400).json({ success: false, message: 'Start date must be before end date' });
+        }
+        
+        const result = await addSchedule(tutor_courseID, schedule_title, schedule_content, start_date, end_date, location);
+        
+        if (result.success && result.affectedRows > 0) {
+            res.json({ success: true, message: 'Schedule created successfully' });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to create schedule' });
+        }
+    } catch (error) {
+        console.error('Error creating schedule:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/schedule/:courseID
+ * Get all schedules for a course
+ */
+router.get('/schedule/:courseID', async (req, res) => {
+    try {
+        const { courseID } = req.params;
+        const schedules = await getScheduleByCourse(courseID);
+        res.json({ success: true, schedules });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/user/:userID
+ * Get user information
+ */
+router.get('/user/:userID', async (req, res) => {
+    try {
+        const { userID } = req.params;
+        const connection = await pool.getConnection();
+        
+        const [rows] = await connection.execute(`
+            SELECT userID, name, current_role, email, more_detail
+            FROM user_profile
+            WHERE userID = ?
+        `, [userID]);
+        
+        connection.release();
+        
+        if (rows.length > 0) {
+            res.json({ success: true, user: rows[0] });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/courses/create
+ * Create a new course (only Lecturer, Graduated, Senior Undergraduated allowed)
+ */
+router.post('/courses/create', async (req, res) => {
+    try {
+        console.log('📥 POST /api/courses/create - Request body:', req.body);
+        
+        const { ownerID, course_title, description, open_state } = req.body;
+        
+        // Validation: Check required fields
+        if (!ownerID || !course_title || !description || !open_state) {
+            console.error('❌ Missing required fields:', { ownerID, course_title, description, open_state });
+            return res.status(400).json({ success: false, message: 'All fields are required: ownerID, course_title, description, open_state' });
+        }
+        
+        // Get user info to check role
+        const connection = await pool.getConnection();
+        const [userRows] = await connection.execute(`
+            SELECT current_role FROM user_profile WHERE userID = ?
+        `, [ownerID]);
+        
+        if (userRows.length === 0) {
+            connection.release();
+            console.error('❌ User not found:', ownerID);
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        console.log('✅ User found:', { ownerID, role: userRows[0].current_role });
+        
+        // Check if user has permission
+        const allowedRoles = ['Lecturer', 'Graduated', 'Senior Undergraduated'];
+        if (!allowedRoles.includes(userRows[0].current_role)) {
+            connection.release();
+            console.error('❌ Access Denied - Invalid role:', userRows[0].current_role);
+            return res.status(403).json({ 
+                success: false, 
+                message: `Access Denied! Only Lecturers, Graduated students, and Senior Undergraduated students can create courses. Your role: ${userRows[0].current_role}` 
+            });
+        }
+        
+        connection.release();
+        
+        console.log('🔓 User authorized - Creating course:', { course_title, description, open_state });
+        
+        // Create the course
+        const result = await createCourse(ownerID, course_title, description, open_state);
+        
+        console.log('✅ Course created successfully:', result);
+        
+        if (result.success) {
+            res.json({ success: true, message: 'Course created successfully', courseID: result.courseID });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to create course' });
+        }
+    } catch (error) {
+        console.error('❌ Error creating course:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

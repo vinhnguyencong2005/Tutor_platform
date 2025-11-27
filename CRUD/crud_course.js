@@ -80,15 +80,27 @@ async function getEnrolledCourses(userID) {
  */
 async function createCourse(ownerID, courseTitle, description, openState = 'Open') {
     try {
+        console.log('🔧 [CRUD] createCourse called with:', { ownerID, courseTitle, description, openState });
+        
         const connection = await pool.getConnection();
-        const [result] = await connection.execute(
-            'INSERT INTO tutor_course (ownerID, course_title, description, open_state) VALUES (?, ?, ?, ?)',
-            [ownerID, courseTitle, description, openState]
-        );
+        console.log('✅ [CRUD] Database connection established');
+        
+        const query = 'INSERT INTO tutor_course (ownerID, course_title, description, open_state) VALUES (?, ?, ?, ?)';
+        console.log('📝 [CRUD] Executing query:', query);
+        console.log('📦 [CRUD] Parameters:', [ownerID, courseTitle, description, openState]);
+        
+        const [result] = await connection.execute(query, [ownerID, courseTitle, description, openState]);
+        
+        console.log('✅ [CRUD] Insert result:', result);
+        console.log('🎯 [CRUD] insertId:', result.insertId);
+        
         connection.release();
+        console.log('✅ [CRUD] Connection released');
+        
         return { success: true, courseID: result.insertId };
     } catch (error) {
-        console.error('Error creating course:', error);
+        console.error('❌ [CRUD] Error creating course:', error.message);
+        console.error('❌ [CRUD] Full error:', error);
         throw error;
     }
 }
