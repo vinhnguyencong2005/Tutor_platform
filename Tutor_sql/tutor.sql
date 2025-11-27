@@ -132,30 +132,36 @@ CREATE TABLE forum_thread (
 	forumID INT AUTO_INCREMENT PRIMARY KEY,
     createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	tutor_courseID INT NOT NULL,
+    userID INT not null,
     inner_body VARCHAR(2000),
-    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID)
+    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
+    foreign key (userID) references user_profile(userID)
 );
 
-INSERT INTO forum_thread (tutor_courseID, inner_body) VALUES
-(1, 'Can someone explain the real difference? They seem the same to me. When do I use one over the other?');
+INSERT INTO forum_thread (tutor_courseID, userID, inner_body) VALUES
+(1, 2345678 , 'Can someone explain the real difference? They seem the same to me. When do I use one over the other?');
 
-INSERT INTO forum_thread (tutor_courseID, inner_body) VALUES
-(2, 'When are we allowed to use it? Is it only for 0/0 or also for infinity/infinity?');
+INSERT INTO forum_thread (tutor_courseID, userID, inner_body) VALUES
+(2, 2312345, 'When are we allowed to use it? Is it only for 0/0 or also for infinity/infinity?');
 
 CREATE TABLE forum_answer (
 	forumID INT NOT NULL,
 	answerID INT AUTO_INCREMENT PRIMARY KEY,
+    userID INT not null,
     answer_body VARCHAR(2000),
-    FOREIGN KEY (forumID) REFERENCES forum_thread(forumID)
+    parent_answerID INT DEFAULT NULL,
+    createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (forumID) REFERENCES forum_thread(forumID),
+    FOREIGN KEY (parent_answerID) REFERENCES forum_answer(answerID),
+    foreign key (userID) references user_profile(userID)
 );
 
-INSERT INTO forum_answer (forumID, answer_body) VALUES
-(1, 'A semaphore is a signaling mechanism, while a mutex is an exclusion mechanism. A mutex is typically used to protect a shared resource from concurrent access.'),
-(1, 'Think of it this way: a mutex is a key to a room (only one person can have it). A semaphore is a count of available permits (e.g., 5 permits for 5 empty chairs).');
+INSERT INTO forum_answer (forumID, userID, answer_body) VALUES
+(1, 2112345, 'A semaphore is a signaling mechanism, while a mutex is an exclusion mechanism. A mutex is typically used to protect a shared resource from concurrent access.'),
+(1, 2112345, 'Think of it this way: a mutex is a key to a room (only one person can have it). A semaphore is a count of available permits (e.g., 5 permits for 5 empty chairs).');
 
-INSERT INTO forum_answer (forumID, answer_body) VALUES
-(2, 'It works for both 0/0 and infinity/infinity indeterminate forms!');
-
+INSERT INTO forum_answer (forumID, userID, answer_body) VALUES
+(2, 2345678, 'It works for both 0/0 and infinity/infinity indeterminate forms!');
 CREATE TABLE log (
     tutor_courseID INT NOT NULL,
     changed_content VARCHAR(200) NOT NULL,
