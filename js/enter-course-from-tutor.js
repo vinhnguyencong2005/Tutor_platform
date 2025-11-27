@@ -401,6 +401,119 @@ function deleteMaterial(chapterNum, materialLink) {
     }
 }
 
+// =============== FORUM FUNCTIONS ===============
+
+// Handle forum posts
+async function submitForumPost() {
+    const forumInput = document.querySelector('.section-seven .input-group input[placeholder="Join the conversation"]');
+    const message = forumInput?.value || '';
+
+    if (!message) {
+        alert("Please enter a message");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                questionBody: message,
+                user_id: userId
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            forumInput.value = '';
+            loadForumPosts(); // Reload forum
+        } else {
+            alert("Error posting message");
+        }
+    } catch (error) {
+        console.error("Error posting to forum:", error);
+        alert("Error posting message. Please try again.");
+    }
+}
+
+// Load forum posts
+async function loadForumPosts() {
+    try {
+        const response = await fetch(`http://localhost:3000/api/course/${courseId}/forum/threads`);
+        const data = await response.json();
+
+        if (data.success && data.threads) {
+            displayForumPosts(data.threads);
+        }
+    } catch (error) {
+        console.error("Error loading forum posts:", error);
+    }
+}
+
+// Display forum posts
+function displayForumPosts(posts) {
+    const forumContainer = document.querySelector('.section-seven');
+    if (!forumContainer) return;
+
+    // Find all existing comments (but not the input group)
+    const existingComments = forumContainer.querySelectorAll('.comment');
+    
+    // Remove all existing comments
+    existingComments.forEach(comment => {
+        comment.remove();
+    });
+
+    // Add new posts (threads/questions)
+    posts.forEach(post => {
+        const date = new Date(post.createDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'comment mb-4';
+        commentDiv.style.cursor = 'pointer';
+        
+        const askerName = post.user_name || 'Anonymous';
+        commentDiv.innerHTML = `
+            <h6 class="fw-bold" style="color: #667eea;">Question by ${askerName}</h6>
+            <p class="comment-text">${escapeHtml(post.inner_body || post.post_text)}</p>
+            <div class="reply-btn text-muted small mb-2">
+                <i class="bi bi-reply me-1"></i> View & Reply - ${formattedDate}
+            </div>
+        `;
+        
+        // Set onclick AFTER setting innerHTML to ensure it works
+        commentDiv.onclick = () => viewForumDetail(post.forumID);
+        
+        forumContainer.appendChild(commentDiv);
+    });
+}
+
+// Navigate to forum detail page
+function viewForumDetail(threadId) {
+    window.location.href = `forum-detail.html?courseId=${courseId}&threadId=${threadId}`;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================
 // PAGE INITIALIZATION
 // ============================================
@@ -408,4 +521,11 @@ function deleteMaterial(chapterNum, materialLink) {
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadCourseData();
+    loadForumPosts();
+    
+    // Setup forum button event listener
+    const sendBtn = document.querySelector('.section-seven .btn-primary');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', submitForumPost);
+    }
 });
