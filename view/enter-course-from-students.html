@@ -108,51 +108,31 @@
     </div>
 
 
-    <!-- Section six -->
+    <!-- Section six - Rating System -->
     <div class="section-six container my-5">
-        <div class="card p-4 shadow-sm">
-            <div class="inner-title fw-bold mb-4">
-                <span class="text-warning fs-2">★</span>
-                4.7 course rating <span class="text-muted">(455,678 ratings)</span>
-            </div>
+        <!-- 1. Average Rating at TOP -->
+        <div id="averageRatingDisplay" class="mb-4">
+            <p class="text-muted">Loading rating...</p>
+        </div>
 
-            <!-- Elon Musk
-            <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Elon Musk</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>awesome well learned teacher, makes one feel like they are being tutored in person, 
-                this course is awesome and I will advice anyone to grab it.</p>
-            </div> -->
-
-            <!-- Steve Jobs -->
-            <!-- <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Steve Jobs</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>Reallt good course. It is very complete, but some parts are outdated. 
-                The React Module (the main one in my opinion) is outdated and I had to learn somewhere else. 
-                But in general the quality is great.</p>
-            </div> -->
-
-            <!-- Bill Gates -->
-            <!-- <div class="border p-3 mb-4 rounded">
-                <h5 class="fw-bold">Bill Gates</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>This course was packed with valuable information. Dr. Donald Trump is an excellent teacher. 
-                I always enjoy his courses. Thanks.</p>
-            </div> -->
-
-            <!-- Feedback Section -->
-            <div class="input-group border rounded-pill p-2">
-                <input type="text" id="feedback-input" class="form-control border-0 rounded-pill ps-3" placeholder="Feedback/Rating">
-                <div class="stars mx-3 d-flex align-items-center" id="star-rating">
-                    <i class="star fa-regular fa-star" data-rating="1"></i>
-                    <i class="star fa-regular fa-star" data-rating="2"></i>
-                    <i class="star fa-regular fa-star" data-rating="3"></i>
-                    <i class="star fa-regular fa-star" data-rating="4"></i>
-                    <i class="star fa-regular fa-star" data-rating="5"></i>
+        <!-- 2. Feedback Form in MIDDLE -->
+        <div class="card p-4 shadow-sm mb-4">
+            <div class="input-group border rounded-pill p-2" style="background-color: #f8f9fa;">
+                <input type="text" id="feedback-input" class="form-control border-0 rounded-pill ps-3" placeholder="Leave feedback..." style="background-color: transparent;">
+                <div class="stars mx-3 d-flex align-items-center gap-1" id="star-rating" style="cursor: pointer; font-size: 1.5rem;">
+                    <i class="star fa-regular fa-star text-warning" data-rating="1" style="cursor: pointer;"></i>
+                    <i class="star fa-regular fa-star text-warning" data-rating="2" style="cursor: pointer;"></i>
+                    <i class="star fa-regular fa-star text-warning" data-rating="3" style="cursor: pointer;"></i>
+                    <i class="star fa-regular fa-star text-warning" data-rating="4" style="cursor: pointer;"></i>
+                    <i class="star fa-regular fa-star text-warning" data-rating="5" style="cursor: pointer;"></i>
                 </div>
                 <button class="btn btn-primary rounded-pill px-4" id="send-feedback-btn">Send</button>
             </div>
+        </div>
+
+        <!-- 3. All Student Feedback at BOTTOM -->
+        <div id="courseRatingsContainer" class="mb-4">
+            <p class="text-muted">Loading ratings...</p>
         </div>
     </div>
 
@@ -210,6 +190,7 @@
 
 
     <!-- Custom JS -->
+    <script src="../js/course-rating.js"></script>
     <script src="../js/enter-course-from-students.js"></script>
 </body>
 </html>

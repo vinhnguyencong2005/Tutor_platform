@@ -15,7 +15,8 @@ INSERT INTO user_profile (userID, name, current_role, password, email) VALUES
 (2112345, 'Tốt Văn Nghiệp', 'Senior Undergraduated', 'seniorpass', 'senior.student@hcmut.edu.vn'),
 (2345678, 'Lê Khác Một', 'Undergraduate', 'anotherstudentpass1', 'student.another@hcmut.edu.vn'),
 (2245673, 'Lê Khác Hai', 'Undergraduate', 'anotherstudentpass2', 'student2.another@hcmut.edu.vn'),
-(2312345, 'Nguyễn Chưa Tốt Nghiệp', 'Undergraduate', 'fejfewkjnqe', 'vinh.nguyencong@hcmut.edu.vn');
+(2312345, 'Nguyễn Chưa Tốt Nghiệp', 'Undergraduate', 'fejfewkjnqe', 'vinh.nguyencong@hcmut.edu.vn'),
+(2456789, 'Nguyễn Văn A', 'Undergraduate', 'graduatedpass', 'tung.nguyen@hcmut.edu.vn' );
 
 
 CREATE TABLE university_courses (
@@ -74,6 +75,7 @@ INSERT INTO tutor_course_enrollment VALUES
 (1, 2112345),
 (1, 2345678),
 (1, 2245673),
+(1, 2456789),
 
 (2, 2345678),
 (2, 2312345);
@@ -100,7 +102,7 @@ CREATE TABLE material (
     tutor_courseID INT NOT NULL,
     material_title VARCHAR(50) NOT NULL,
     material_link VARCHAR(300),
-    type ENUM('PDF', 'Video') DEFAULT 'PDF',
+    type ENUM('PDF', 'Video', 'Library') DEFAULT 'PDF',
     PRIMARY KEY (tutor_courseID ,chapter_num, material_link),
     FOREIGN KEY (tutor_courseID, chapter_num) REFERENCES chapter(tutor_courseID, chapter_num)
 );

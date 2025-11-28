@@ -72,52 +72,8 @@
     <div class="Section-two container my-5">
         <div class="course-section-title">Course Content</div>
         <div class="course-section accordion" id="courseAccordion">
-
-            <!-- Example section -->
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section1">
-                    Introduction to HTML
-                    </button>
-                </h2>
-                <div id="section1" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: What is HTML?</div>
-                        <div class="lecture">Lecture 2: Basic Tags</div>
-                        <div class="lecture">Lecture 3: Links and Images</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section2">
-                    Intermediate HTML
-                    </button>
-                </h2>
-                <div id="section2" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: Tables</div>
-                        <div class="lecture">Lecture 2: Forms</div>
-                        <div class="lecture">Lecture 3: Semantic HTML</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section3">
-                    CSS Basics
-                    </button>
-                </h2>
-                <div id="section3" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
-                    <div class="accordion-body">
-                        <div class="lecture">Lecture 1: CSS Selectors</div>
-                        <div class="lecture">Lecture 2: Colors and Backgrounds</div>
-                        <div class="lecture">Lecture 3: Fonts and Text</div>
-                    </div>
-                </div>
-            </div>
+            <!-- Chapters and materials will be loaded dynamically here -->
+            <p class="text-muted">Loading course content...</p>
         </div>
     </div>
 
@@ -137,13 +93,13 @@
             Instructor
         </div>
         <div class="instructor-card">
-            <img src="../assets/images/Myprofile.jpg" alt="Profile Picture" class="instructor-image">
+            <img id="instructor-image" src="../assets/images/Myprofile.jpg" alt="Profile Picture" class="instructor-image">
             <div class="instructor-info">
-                <p><span>Name:</span> Donald Trump</p>
-                <p><span>Email Address:</span> donaldtrump@hcmut.edu.vn</p>
-                <p><span>Phone number:</span> 0223445779</p>
-                <p><span>Professional Title:</span> Developer and Lead Instructor</p>
-                <p><span>About me:</span> I am the smartest guy in the world</p>
+                <p><span>Name:</span> <span id="instructor-name">Loading...</span></p>
+                <p><span>Email Address:</span> <span id="instructor-email">Loading...</span></p>
+                <p><span>Phone number:</span> <span id="instructor-phone">Loading...</span></p>
+                <p><span>Professional Title:</span> <span id="instructor-title">Loading...</span></p>
+                <p><span>About me:</span> <span id="instructor-bio">Loading...</span></p>
             </div>
         </div>
     </div>
@@ -151,38 +107,18 @@
     <!-- Section six -->
     <div class="section-six container my-5">
         <div class="card p-4 shadow-sm">
-            <div class="inner-title fw-bold mb-4">
-                <span class="text-warning fs-2">★</span>
-                4.7 course rating <span class="text-muted">(455,678 ratings)</span>
+            <!-- Average Rating Display -->
+            <div id="averageRatingDisplay" class="mb-4">
+                <!-- Will be populated by course-rating.js -->
             </div>
 
-            <!-- Elon Musk -->
-            <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Elon Musk</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>awesome well learned teacher, makes one feel like they are being tutored in person, 
-                this course is awesome and I will advice anyone to grab it.</p>
+            <!-- Ratings List -->
+            <div id="courseRatingsContainer" class="mb-4">
+                <!-- Will be populated by course-rating.js -->
             </div>
 
-            <!-- Steve Jobs -->
-            <div class="border p-3 mb-3 rounded">
-                <h5 class="fw-bold">Steve Jobs</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>Reallt good course. It is very complete, but some parts are outdated. 
-                The React Module (the main one in my opinion) is outdated and I had to learn somewhere else. 
-                But in general the quality is great.</p>
-            </div>
-
-            <!-- Bill Gates -->
-            <div class="border p-3 mb-4 rounded">
-                <h5 class="fw-bold">Bill Gates</h5>
-                <div class="text-warning mb-2">★★★★★</div>
-                <p>This course was packed with valuable information. Dr. Donald Trump is an excellent teacher. 
-                I always enjoy his courses. Thanks.</p>
-            </div>
-
-            <!-- Feedback Section -->
-            <div class="input-group border rounded-pill p-2">
+            <!-- Feedback Section (Only for enrolled users) -->
+            <div id="feedback-section" style="display: none;" class="input-group border rounded-pill p-2">
                 <input type="text" id="feedback-input" class="form-control border-0 rounded-pill ps-3" placeholder="Feedback/Rating">
                 <div class="stars mx-3 d-flex align-items-center" id="star-rating">
                     <i class="star fa-regular fa-star" data-rating="1"></i>
@@ -234,6 +170,7 @@
 
 
     <!-- Custom JS -->
+    <script src="../js/course-rating.js"></script>
     <script src="../js/course-detail.js"></script>
 </body>
 </html>
