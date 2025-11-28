@@ -4,7 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const { verifyLogin, updateUserProfile } = require('../CRUD/crud_login');
 const { getAllCoursesList, getCourseById, enrollUserInCourse, createCourse, getManagedCourses } = require('../CRUD/crud_course');
-const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addChapter, addSchedule } = require('../CRUD/crud_course_content');
+const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addSection, deleteSection, addSchedule } = require('../CRUD/crud_course_content');
+const { getForumThreads, getForumThreadDetail, createForumThread, addForumAnswer, deleteForumThread, deleteForumAnswer, createFollowUpQuestion, getFollowUpQuestions } = require('../CRUD/crud_forum');
 const { 
     getDashboardOverview, 
     getEnrolledCoursesWithActivity, 
@@ -16,6 +17,7 @@ const {
     getChapterMaterials,
     getCourseChapters
 } = require('../CRUD/crud_dashboard');
+const { getUnreadNotifications, getAllNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadNotificationCount, deleteNotification, notifyEnrolledUsers } = require('../CRUD/crud_notification');
 const pool = require('./database');
 
 // Configure multer for file uploads
@@ -197,6 +199,26 @@ router.post('/course/:courseId/chapter', async (req, res) => {
     }
 });
 
+// Delete a chapter/section
+router.delete('/course/:courseId/chapter/:chapterNum', async (req, res) => {
+    try {
+        const { courseId, chapterNum } = req.params;
+
+        if (!courseId || !chapterNum) {
+            return res.status(400).json({ success: false, message: 'courseId and chapterNum are required' });
+        }
+
+        const deleted = await deleteSection(courseId, chapterNum);
+        if (deleted) {
+            res.json({ success: true, message: 'Chapter deleted successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Chapter not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Get materials for a specific chapter
 router.get('/course/:courseId/chapter/:chapterNum/materials', async (req, res) => {
     try {
@@ -228,6 +250,10 @@ router.post('/course/:courseId/chapter/:chapterNum/upload-material', upload.sing
 
         const added = await addMaterial(courseId, chapterNum, material_title, material_link, type || 'PDF');
         if (added) {
+            // Send notification to all course members
+            const message = `📄 New material added: "${material_title}"`;
+            await notifyEnrolledUsers(courseId, 'material', message, null, null);
+            
             res.json({ success: true, message: 'Material added', material_link: material_link });
         } else {
             res.status(500).json({ success: false, message: 'Failed to add material' });
@@ -284,6 +310,8 @@ router.post('/enroll-request', async (req, res) => {
     try {
         const { courseId, userId } = req.body;
         
+        console.log('📝 Enrollment request received:', { courseId, userId });
+        
         if (!courseId || !userId) {
             return res.status(400).json({ success: false, message: 'courseId and userId are required' });
         }
@@ -291,7 +319,7 @@ router.post('/enroll-request', async (req, res) => {
         const connection = await pool.getConnection();
         
         // Add to waiting_queue with 'Waiting' status
-        await connection.execute(`
+        const [result] = await connection.execute(`
             INSERT INTO waiting_queue (tutor_courseID, userID, status) 
             VALUES (?, ?, 'Waiting')
             ON DUPLICATE KEY UPDATE status = 'Waiting'
@@ -299,11 +327,61 @@ router.post('/enroll-request', async (req, res) => {
         
         connection.release();
         
+        console.log('✅ Enrollment request saved:', { courseId, userId, affectedRows: result.affectedRows });
         res.json({ success: true, message: 'Enrollment request sent' });
     } catch (error) {
+        console.error('❌ Error processing enrollment request:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+/**
+ * GET /api/enrollment-status/:courseId/:userId
+ * Check if student has already requested enrollment or is enrolled
+ */
+router.get('/enrollment-status/:courseId/:userId', async (req, res) => {
+    try {
+        const { courseId, userId } = req.params;
+        
+        const connection = await pool.getConnection();
+        
+        // Check if already enrolled
+        const [enrolled] = await connection.execute(`
+            SELECT COUNT(*) as count FROM tutor_course_enrollment
+            WHERE tutor_courseID = ? AND userID = ?
+        `, [courseId, userId]);
+        
+        if (enrolled[0].count > 0) {
+            connection.release();
+            return res.json({ success: true, status: 'enrolled', message: 'Already enrolled' });
+        }
+        
+        // Check if already requested
+        const [requested] = await connection.execute(`
+            SELECT status FROM waiting_queue
+            WHERE tutor_courseID = ? AND userID = ?
+        `, [courseId, userId]);
+        
+        connection.release();
+        
+        if (requested.length > 0) {
+            console.log('📋 Student already requested:', { courseId, userId, status: requested[0].status });
+            return res.json({ 
+                success: true, 
+                status: 'requested',
+                enrollmentStatus: requested[0].status,
+                message: `Request status: ${requested[0].status}` 
+            });
+        }
+        
+        console.log('✅ No previous enrollment or request found');
+        res.json({ success: true, status: 'none', message: 'Can enroll' });
+    } catch (error) {
+        console.error('❌ Error checking enrollment status:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 router.post('/rate-course', async (req, res) => {
     try {
         const { userID, courseID, rating, review } = req.body;
@@ -470,28 +548,41 @@ router.get('/dashboard/course/:courseID/chapter/:chapterNum/materials', async (r
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
+// ==================== Schedule Management ====================
 /**
  * POST /api/schedule/create
  * Create a new schedule for a course
  */
 router.post('/schedule/create', async (req, res) => {
     try {
-        const { tutor_courseID, schedule_title, schedule_content, start_date, end_date, location } = req.body;
+        const { tutor_courseID, schedule_title, schedule_content, start_date, start_time, end_date, end_time, location } = req.body;
         
         // Validation: Check required fields
-        if (!tutor_courseID || !schedule_title || !schedule_content || !start_date || !end_date || !location) {
+        if (!tutor_courseID || !schedule_title || !schedule_content || !start_date || !start_time || !end_date || !end_time || !location) {
             return res.status(400).json({ success: false, message: 'All fields are required' });
         }
         
-        // Validation: Check if start_date is before end_date
-        if (start_date >= end_date) {
+        // Validation: Check if start_date + start_time is before end_date + end_time
+        // Parse dates and times properly
+        const [startYear, startMonth, startDay] = start_date.split('-').map(Number);
+        const [startHour, startMin] = start_time.split(':').map(Number);
+        const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMin, 0);
+        
+        const [endYear, endMonth, endDay] = end_date.split('-').map(Number);
+        const [endHour, endMin] = end_time.split(':').map(Number);
+        const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMin, 0);
+        
+        if (startDateTime >= endDateTime) {
             return res.status(400).json({ success: false, message: 'Start date must be before end date' });
         }
         
-        const result = await addSchedule(tutor_courseID, schedule_title, schedule_content, start_date, end_date, location);
+        const result = await addSchedule(tutor_courseID, schedule_title, schedule_content, start_date, start_time, end_date, end_time, location);
         
         if (result.success && result.affectedRows > 0) {
+            // Send notification to all course members
+            const message = `📅 New schedule created: "${schedule_title}" on ${start_date}`;
+            await notifyEnrolledUsers(tutor_courseID, 'schedule', message, null, null);
+            
             res.json({ success: true, message: 'Schedule created successfully' });
         } else {
             res.status(500).json({ success: false, message: 'Failed to create schedule' });
@@ -600,6 +691,311 @@ router.post('/courses/create', async (req, res) => {
         }
     } catch (error) {
         console.error('❌ Error creating course:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+// ==================== FORUM ROUTES ====================
+
+// Get all forum threads for a course
+router.get('/course/:courseId/forum/threads', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const threads = await getForumThreads(courseId);
+        res.json({ success: true, threads });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get a specific forum thread with all answers
+router.get('/course/:courseId/forum/threads/:threadId', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        const threadDetail = await getForumThreadDetail(threadId);
+        res.json({ success: true, data: threadDetail });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create a new forum thread (student asks a question)
+router.post('/course/:courseId/forum/threads', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { questionBody, user_id } = req.body;
+        
+        if (!questionBody || questionBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Question body is required' });
+        }
+        
+        if (!user_id) {
+            return res.status(400).json({ success: false, message: 'User ID is required' });
+        }
+        
+        const threadId = await createForumThread(courseId, questionBody, user_id);
+        res.json({ success: true, threadId, message: 'Forum thread created successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Add a reply to a forum thread (tutor or student answer)
+router.post('/course/:courseId/forum/threads/:threadId/reply', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        const { answerBody, user_id, parent_answerID } = req.body;
+        
+        if (!answerBody || answerBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Answer body is required' });
+        }
+        
+        if (!user_id) {
+            return res.status(400).json({ success: false, message: 'User ID is required' });
+        }
+        
+        const answerId = await addForumAnswer(threadId, answerBody, user_id, parent_answerID || null);
+        res.json({ success: true, answerId, message: 'Reply added successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a forum thread
+router.delete('/course/:courseId/forum/threads/:threadId', async (req, res) => {
+    try {
+        const { threadId } = req.params;
+        await deleteForumThread(threadId);
+        res.json({ success: true, message: 'Forum thread deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a forum answer
+router.delete('/course/:courseId/forum/answers/:answerId', async (req, res) => {
+    try {
+        const { answerId } = req.params;
+        await deleteForumAnswer(answerId);
+        res.json({ success: true, message: 'Forum answer deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create a follow-up question to a tutor answer
+router.post('/course/:courseId/forum/answers/:answerId/followup', async (req, res) => {
+    try {
+        const { answerId } = req.params;
+        const { AnswerBody, user_id } = req.body;
+        
+        if (!AnswerBody || AnswerBody.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Follow-up question is required' });
+        }
+        
+        if (!user_id) {
+            return res.status(400).json({ success: false, message: 'User ID is required' });
+        }
+        
+        const followUpId = await createFollowUpQuestion(answerId, AnswerBody, user_id);
+        res.json({ success: true, followUpId, message: 'Follow-up question created successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== WAITING QUEUE / APPROVAL ROUTES ====================
+
+/**
+ * GET /api/waiting-queue/:courseID
+ * Get all pending enrollment requests for a course
+ */
+router.get('/waiting-queue/:courseID', async (req, res) => {
+    try {
+        const { courseID } = req.params;
+        const connection = await pool.getConnection();
+        
+        const [requests] = await connection.execute(`
+            SELECT 
+                wq.userID,
+                up.name,
+                up.email,
+                wq.status,
+                wq.tutor_courseID
+            FROM waiting_queue wq
+            JOIN user_profile up ON wq.userID = up.userID
+            WHERE wq.tutor_courseID = ? AND wq.status = 'Waiting'
+            ORDER BY wq.userID ASC
+        `, [courseID]);
+        
+        connection.release();
+        res.json({ success: true, requests: requests });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/waiting-queue/approve
+ * Approve student enrollment
+ */
+router.post('/waiting-queue/approve', async (req, res) => {
+    try {
+        const { courseID, userID } = req.body;
+        
+        if (!courseID || !userID) {
+            return res.status(400).json({ success: false, message: 'courseID and userID are required' });
+        }
+        
+        const connection = await pool.getConnection();
+        
+        // Update waiting queue status
+        await connection.execute(`
+            UPDATE waiting_queue 
+            SET status = 'Approved'
+            WHERE tutor_courseID = ? AND userID = ?
+        `, [courseID, userID]);
+        
+        // Add to enrollment
+        await connection.execute(`
+            INSERT INTO tutor_course_enrollment (tutor_courseID, userID)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE tutor_courseID = tutor_courseID
+        `, [courseID, userID]);
+        
+        connection.release();
+        res.json({ success: true, message: 'Student approved and enrolled' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/waiting-queue/decline
+ * Decline student enrollment
+ */
+router.post('/waiting-queue/decline', async (req, res) => {
+    try {
+        const { courseID, userID } = req.body;
+        
+        if (!courseID || !userID) {
+            return res.status(400).json({ success: false, message: 'courseID and userID are required' });
+        }
+        
+        const connection = await pool.getConnection();
+        
+        // Update waiting queue status
+        await connection.execute(`
+            UPDATE waiting_queue 
+            SET status = 'Denied'
+            WHERE tutor_courseID = ? AND userID = ?
+        `, [courseID, userID]);
+        
+        connection.release();
+        res.json({ success: true, message: 'Student enrollment declined' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== NOTIFICATION ROUTES ====================
+
+/**
+ * GET /api/notifications/:userID
+ * Get all notifications for a user
+ */
+router.get('/notifications/:userID', async (req, res) => {
+    try {
+        const { userID } = req.params;
+        
+        const notifications = await getAllNotifications(userID);
+        const unreadCount = await getUnreadNotificationCount(userID);
+        
+        res.json({ 
+            success: true, 
+            notifications: notifications,
+            unreadCount: unreadCount
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/notifications/:userID/unread
+ * Get unread notifications for a user
+ */
+router.get('/notifications/:userID/unread', async (req, res) => {
+    try {
+        const { userID } = req.params;
+        
+        const notifications = await getUnreadNotifications(userID);
+        
+        res.json({ 
+            success: true, 
+            notifications: notifications,
+            count: notifications.length
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * PUT /api/notifications/:notificationID/read
+ * Mark a notification as read
+ */
+router.put('/notifications/:notificationID/read', async (req, res) => {
+    try {
+        const { notificationID } = req.params;
+        
+        const result = await markNotificationAsRead(notificationID);
+        
+        if (result) {
+            res.json({ success: true, message: 'Notification marked as read' });
+        } else {
+            res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * PUT /api/notifications/:userID/read-all
+ * Mark all notifications as read for a user
+ */
+router.put('/notifications/:userID/read-all', async (req, res) => {
+    try {
+        const { userID } = req.params;
+        
+        const count = await markAllNotificationsAsRead(userID);
+        
+        res.json({ 
+            success: true, 
+            message: 'All notifications marked as read',
+            count: count
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * DELETE /api/notifications/:notificationID
+ * Delete a notification
+ */
+router.delete('/notifications/:notificationID', async (req, res) => {
+    try {
+        const { notificationID } = req.params;
+        
+        const result = await deleteNotification(notificationID);
+        
+        if (result) {
+            res.json({ success: true, message: 'Notification deleted' });
+        } else {
+            res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+    } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
