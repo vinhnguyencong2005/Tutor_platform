@@ -1,0 +1,232 @@
+/* Notification Bell Icon */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    font-size: 20px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.notification-bell:hover {
+    color: #2563eb;
+}
+
+/* Unread Badge */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background-color: #dc2626;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
+}
+
+/* Notification Dropdown Box */
+.notification-dropdown {
+    position: absolute;
+    width: 380px;
+    max-height: 500px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10003;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+}
+
+.notification-dropdown.active {
+    display: flex;
+}
+
+/* Notification Dropdown Header */
+.notification-dropdown-header {
+    padding: 15px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.notification-dropdown-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.notification-dropdown-header button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.notification-dropdown-header button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Notification List */
+.notification-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Notification Item */
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: #ffffff;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+}
+
+.notification-item.unread {
+    background: #eff6ff;
+    border-left: 3px solid #2563eb;
+}
+
+.notification-item.unread:hover {
+    background: #dbeafe;
+}
+
+.notification-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.notification-item-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-item-text {
+    flex: 1;
+}
+
+.notification-item-message {
+    font-size: 13px;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.notification-item.unread .notification-item-message {
+    font-weight: 500;
+}
+
+.notification-item-type {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 6px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 3px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.notification-item-time {
+    font-size: 11px;
+    color: #9ca3af;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notification-item-close {
+    color: #d1d5db;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    transition: color 0.2s;
+}
+
+.notification-item-close:hover {
+    color: #ef4444;
+}
+
+/* Empty State */
+.notification-empty {
+    padding: 30px 15px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.notification-empty-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+/* Notification Types */
+.notification-type-material::before {
+    content: "📄 ";
+}
+
+.notification-type-schedule::before {
+    content: "📅 ";
+}
+
+.notification-type-announcement::before {
+    content: "📢 ";
+}
+
+.notification-type-forum::before {
+    content: "💬 ";
+}
