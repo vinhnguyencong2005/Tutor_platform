@@ -92,7 +92,7 @@ async function getLibraryMaterials() {
         const [rows] = await connection.execute(`
             SELECT 
                 material_name,
-                Lmaterial_link
+                Lmaterial_link as material_link
             FROM library_material
             ORDER BY material_name ASC
         `);

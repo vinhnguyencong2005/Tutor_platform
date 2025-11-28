@@ -6,6 +6,7 @@ const { verifyLogin, updateUserProfile } = require('../CRUD/crud_login');
 const { getAllCoursesList, getCourseById, enrollUserInCourse, createCourse, getManagedCourses } = require('../CRUD/crud_course');
 const { getChaptersByCourse, getMaterialsByChapter, getLibraryMaterials, getScheduleByCourse, addMaterial, deleteMaterial, addSection, deleteSection, addSchedule } = require('../CRUD/crud_course_content');
 const { getForumThreads, getForumThreadDetail, createForumThread, addForumAnswer, deleteForumThread, deleteForumAnswer, createFollowUpQuestion, getFollowUpQuestions } = require('../CRUD/crud_forum');
+const { getCourseRatings, getAverageRating, getUserRating, addOrUpdateRating, deleteRating } = require('../CRUD/crud_rating');
 const { 
     getDashboardOverview, 
     getEnrolledCoursesWithActivity, 
@@ -1058,5 +1059,63 @@ router.delete('/notifications/:notificationID', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ==================== RATING ROUTES ====================
+
+// Get all ratings for a course
+router.get('/course/:courseId/ratings', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const ratings = await getCourseRatings(courseId);
+        const avgData = await getAverageRating(courseId);
+        res.json({ success: true, ratings, averageRating: avgData.averageRating, totalRatings: avgData.totalRatings });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user's rating for a course
+router.get('/course/:courseId/ratings/:userId', async (req, res) => {
+    try {
+        const { courseId, userId } = req.params;
+        const userRating = await getUserRating(courseId, userId);
+        res.json({ success: true, userRating });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Add or update rating
+router.post('/course/:courseId/ratings', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { userID, rating, review } = req.body;
+        
+        if (!userID) {
+            return res.status(400).json({ success: false, message: 'User ID is required' });
+        }
+        
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
+        }
+        
+        const result = await addOrUpdateRating(courseId, userID, rating, review || '');
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete rating
+router.delete('/course/:courseId/ratings/:userId', async (req, res) => {
+    try {
+        const { courseId, userId } = req.params;
+        await deleteRating(courseId, userId);
+        res.json({ success: true, message: 'Rating deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 
 module.exports = router;

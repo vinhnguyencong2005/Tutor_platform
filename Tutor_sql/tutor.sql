@@ -100,7 +100,7 @@ CREATE TABLE material (
     tutor_courseID INT NOT NULL,
     material_title VARCHAR(50) NOT NULL,
     material_link VARCHAR(300),
-    type ENUM('PDF', 'Video') DEFAULT 'PDF',
+    type ENUM('PDF', 'Video', 'Library') DEFAULT 'PDF',
     PRIMARY KEY (tutor_courseID ,chapter_num, material_link),
     FOREIGN KEY (tutor_courseID, chapter_num) REFERENCES chapter(tutor_courseID, chapter_num)
 );

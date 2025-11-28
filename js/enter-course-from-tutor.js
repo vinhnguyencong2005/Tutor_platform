@@ -5,10 +5,24 @@ const userId = localStorage.getItem("currentUserID");
 let courseData = null;
 let sectionCounter = 0;
 let lectureCounters = {};
+let libraryMaterialsCache = []; // Cache for library materials
 
 // ============================================
 // INITIALIZATION - Load lecturer course data
 // ============================================
+
+// Initialize page on load
+document.addEventListener('DOMContentLoaded', () => {
+    loadCourseData();
+    initializeRating(courseId); // Load ratings
+    loadForumPosts();           // Load forum questions
+    
+    // Setup forum button event listener
+    const sendBtn = document.querySelector('.section-seven .btn-primary');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', submitForumPost);
+    }
+});
 
 // Load course data for editing
 async function loadCourseData() {
@@ -253,14 +267,25 @@ function addLecture(sectionId) {
             </div>
             <div class="mb-3">
                 <label class="form-label">Material Type</label>
-                <select class="form-select" id="material-type-${sectionId}">
+                <select class="form-select" id="material-type-${sectionId}" onchange="handleMaterialTypeChange('${sectionId}')">
                     <option value="Video">Video</option>
                     <option value="PDF">PDF</option>
+                    <option value="Library">Library</option>
                 </select>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" id="material-link-container-${sectionId}">
                 <label class="form-label">Material Link/URL</label>
                 <input type="text" class="form-control" id="material-link-${sectionId}" placeholder="https://example.com/material">
+            </div>
+            <div class="mb-3" id="library-select-container-${sectionId}" style="display: none;">
+                <label class="form-label">Select Library Material</label>
+                <select class="form-select" id="library-material-${sectionId}" onchange="loadLibraryMaterialLink('${sectionId}')">
+                    <option value="">Loading library materials...</option>
+                </select>
+                <div id="library-link-display-${sectionId}" class="mt-2 p-2 bg-light rounded" style="display: none;">
+                    <small><strong>Material Link:</strong></small>
+                    <p id="library-link-text-${sectionId}"></p>
+                </div>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-success btn-sm" onclick="saveMaterial('${sectionId}')">
@@ -274,15 +299,182 @@ function addLecture(sectionId) {
     `;
     
     bodyElement.insertAdjacentHTML('beforeend', inputHTML);
+    
+    // Load library materials for the first time
+    loadLibraryMaterials(sectionId);
+}
+
+async function loadLibraryMaterials(sectionId) {
+    try {
+        const response = await fetch('http://localhost:3000/api/library-materials');
+        const data = await response.json();
+        
+        const select = document.getElementById(`library-material-${sectionId}`);
+        if (!select) return;
+        
+        if (data.success && data.materials && data.materials.length > 0) {
+            // Cache the materials for later use
+            libraryMaterialsCache = data.materials;
+            
+            select.innerHTML = '<option value="">-- Select a library material --</option>';
+            data.materials.forEach(material => {
+                const option = document.createElement('option');
+                option.value = material.material_name;
+                option.textContent = material.material_name;
+                option.setAttribute('data-link', material.material_link);
+                select.appendChild(option);
+            });
+        } else {
+            select.innerHTML = '<option value="">No library materials available</option>';
+        }
+    } catch (error) {
+        console.error('Error loading library materials:', error);
+        const select = document.getElementById(`library-material-${sectionId}`);
+        if (select) {
+            select.innerHTML = '<option value="">Error loading materials</option>';
+        }
+    }
+}
+
+// Handle material type change
+function handleMaterialTypeChange(sectionId) {
+    const materialType = document.getElementById(`material-type-${sectionId}`).value;
+    const linkContainer = document.getElementById(`material-link-container-${sectionId}`);
+    const libraryContainer = document.getElementById(`library-select-container-${sectionId}`);
+    
+    if (materialType === 'Library') {
+        linkContainer.style.display = 'none';
+        libraryContainer.style.display = 'block';
+    } else {
+        linkContainer.style.display = 'block';
+        libraryContainer.style.display = 'none';
+    }
 }
 
 function saveMaterial(sectionId) {
     const title = document.getElementById(`material-title-${sectionId}`)?.value?.trim();
     const type = document.getElementById(`material-type-${sectionId}`)?.value;
-    const link = document.getElementById(`material-link-${sectionId}`)?.value?.trim();
+    let link = '';
+    
+    // Get link based on material type
+    if (type === 'Library') {
+        const select = document.getElementById(`library-material-${sectionId}`);
+        const selectedOption = select.options[select.selectedIndex];
+        
+        console.log("Selected option:", selectedOption);
+        console.log("Selected value:", selectedOption.value);
+        console.log("Library cache:", libraryMaterialsCache);
+        
+        if (!selectedOption.value) {
+            alert("Please select a library material");
+            return;
+        }
+        
+        // Get link from cached materials - search by material_name
+        const material = libraryMaterialsCache.find(m => m.material_name === selectedOption.value);
+        console.log("Found material:", material);
+        
+        // Check for both material_link and Lmaterial_link (with capital L)
+        if (material && (material.material_link || material.Lmaterial_link)) {
+            link = material.material_link || material.Lmaterial_link;
+            console.log("Got link from cache:", link);
+        } else {
+            // Try to get from data attribute
+            link = selectedOption.getAttribute('data-link');
+            console.log("Got link from data attribute:", link);
+        }
+        
+        // Final fallback - if link is still undefined or empty
+        if (!link || link === 'undefined') {
+            alert("Could not retrieve library material link. Please try again.");
+            return;
+        }
+    } else {
+        link = document.getElementById(`material-link-${sectionId}`)?.value?.trim();
+    }
 
     if (!title || !link) {
-        alert("Please fill in all fields");
+        alert("Please fill in all fields: Title=" + title + ", Link=" + link);
+        return;
+    }
+
+    // Extract chapter number from sectionId
+    let chapterNum = sectionId.includes('chapter-') 
+        ? parseInt(sectionId.split('-')[1])
+        : parseInt(sectionId.replace('section', ''));
+
+    try {
+        fetch(`http://localhost:3000/api/course/${courseId}/chapter/${chapterNum}/upload-material`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                material_title: title,
+                type: type,
+                material_link: link
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                alert("Material added successfully");
+                // Remove the form and reload materials
+                document.getElementById(`material-form-${sectionId}`)?.remove();
+                loadChapterMaterials(chapterNum, sectionId);
+            } else {
+                alert("Error adding material: " + (data.error || data.message || 'Unknown error'));
+            }
+        }).catch(error => {
+            console.error("Error saving material:", error);
+            alert("Error saving material. Please try again.");
+        });
+    } catch (error) {
+        console.error("Error saving material:", error);
+        alert("Error saving material. Please try again.");
+    }
+}
+
+function saveMaterial(sectionId) {
+    const title = document.getElementById(`material-title-${sectionId}`)?.value?.trim();
+    const type = document.getElementById(`material-type-${sectionId}`)?.value;
+    let link = '';
+    
+    // Get link based on material type
+    if (type === 'Library') {
+        const select = document.getElementById(`library-material-${sectionId}`);
+        const selectedOption = select.options[select.selectedIndex];
+        
+        console.log("Selected option:", selectedOption);
+        console.log("Selected value:", selectedOption.value);
+        console.log("Library cache:", libraryMaterialsCache);
+        
+        if (!selectedOption.value) {
+            alert("Please select a library material");
+            return;
+        }
+        
+        // Get link from cached materials - search by material_name
+        const material = libraryMaterialsCache.find(m => m.material_name === selectedOption.value);
+        console.log("Found material:", material);
+        
+        // Check for both material_link and Lmaterial_link (with capital L)
+        if (material && (material.material_link || material.Lmaterial_link)) {
+            link = material.material_link || material.Lmaterial_link;
+            console.log("Got link from cache:", link);
+        } else {
+            // Try to get from data attribute
+            link = selectedOption.getAttribute('data-link');
+            console.log("Got link from data attribute:", link);
+        }
+        
+        // Final fallback - if link is still undefined or empty
+        if (!link || link === 'undefined') {
+            alert("Could not retrieve library material link. Please try again.");
+            return;
+        }
+    } else {
+        link = document.getElementById(`material-link-${sectionId}`)?.value?.trim();
+    }
+
+    if (!title || !link) {
+        alert("Please fill in all fields: Title=" + title + ", Link=" + link);
         return;
     }
 
