@@ -250,9 +250,22 @@ router.post('/course/:courseId/chapter/:chapterNum/upload-material', upload.sing
 
         const added = await addMaterial(courseId, chapterNum, material_title, material_link, type || 'PDF');
         if (added) {
-            // Send notification to all course members
-            const message = `📄 New material added: "${material_title}"`;
-            await notifyEnrolledUsers(courseId, 'material', message, null, null);
+            try {
+                // Get course name for notification
+                const connection = await pool.getConnection();
+                const [courseData] = await connection.execute(`
+                    SELECT course_title FROM tutor_course WHERE tutor_courseID = ?
+                `, [courseId]);
+                connection.release();
+                
+                const courseName = courseData[0]?.course_title || 'Unknown Course';
+                
+                // Send notification to all course members with course name
+                const message = `📄 New material added to "${courseName}": "${material_title}"`;
+                await notifyEnrolledUsers(courseId, 'material', message, null, null);
+            } catch (notifyError) {
+                console.error('Error sending notification:', notifyError);
+            }
             
             res.json({ success: true, message: 'Material added', material_link: material_link });
         } else {
@@ -331,6 +344,39 @@ router.post('/enroll-request', async (req, res) => {
         res.json({ success: true, message: 'Enrollment request sent' });
     } catch (error) {
         console.error('❌ Error processing enrollment request:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/enroll
+ * Direct enroll student in Open access course
+ */
+router.post('/enroll', async (req, res) => {
+    try {
+        const { courseId, userId } = req.body;
+        
+        console.log('📝 Direct enrollment received:', { courseId, userId });
+        
+        if (!courseId || !userId) {
+            return res.status(400).json({ success: false, message: 'courseId and userId are required' });
+        }
+        
+        const connection = await pool.getConnection();
+        
+        // Add directly to tutor_course_enrollment
+        const [result] = await connection.execute(`
+            INSERT INTO tutor_course_enrollment (tutor_courseID, userID)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE tutor_courseID = tutor_courseID
+        `, [courseId, userId]);
+        
+        connection.release();
+        
+        console.log('✅ Student directly enrolled:', { courseId, userId, affectedRows: result.affectedRows });
+        res.json({ success: true, message: 'Successfully enrolled' });
+    } catch (error) {
+        console.error('❌ Error processing enrollment:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -579,9 +625,22 @@ router.post('/schedule/create', async (req, res) => {
         const result = await addSchedule(tutor_courseID, schedule_title, schedule_content, start_date, start_time, end_date, end_time, location);
         
         if (result.success && result.affectedRows > 0) {
-            // Send notification to all course members
-            const message = `📅 New schedule created: "${schedule_title}" on ${start_date}`;
-            await notifyEnrolledUsers(tutor_courseID, 'schedule', message, null, null);
+            try {
+                // Get course name for notification
+                const connection = await pool.getConnection();
+                const [courseData] = await connection.execute(`
+                    SELECT course_title FROM tutor_course WHERE tutor_courseID = ?
+                `, [tutor_courseID]);
+                connection.release();
+                
+                const courseName = courseData[0]?.course_title || 'Unknown Course';
+                
+                // Send notification to all course members with course name
+                const message = `📅 New schedule in "${courseName}": "${schedule_title}" on ${start_date}`;
+                await notifyEnrolledUsers(tutor_courseID, 'schedule', message, null, null);
+            } catch (notifyError) {
+                console.error('Error sending notification:', notifyError);
+            }
             
             res.json({ success: true, message: 'Schedule created successfully' });
         } else {
