@@ -63,7 +63,7 @@ async function loadCourseDetail() {
             // 1. Check if lecturer owns this course
             if (checkCourseOwnership(courseData)) {
                 // Redirect to lecturer editing interface
-                window.location.href = "enter-course-from-tutor.html";
+                window.location.href = `enter-course-from-tutor.html?courseId=${courseId}`;
                 return;
             }
             
@@ -71,7 +71,7 @@ async function loadCourseDetail() {
             const isEnrolled = await checkEnrollment();
             if (isEnrolled) {
                 // Redirect to student view
-                window.location.href = "enter-course-from-students.html";
+                window.location.href = `enter-course-from-students.html?courseId=${courseId}`;
                 return;
             }
             
@@ -104,14 +104,43 @@ function displayPreview() {
     if (innerDesc) innerDesc.textContent = courseData.description;
     if (innerTutor) innerTutor.textContent = `Created by ${courseData.tutor || 'Unknown'}, Developer and Lead Instructor`;
     if (joinBtn) {
-        joinBtn.textContent = "Join now";
-        joinBtn.addEventListener("click", enrollCourse);
+        // Check enrollment status before showing button
+        checkEnrollmentStatus(joinBtn);
     }
     
     // Section Three - Description
     const sectionThreeDesc = document.querySelector(".section-three .inner-desc");
     if (sectionThreeDesc) {
         sectionThreeDesc.textContent = courseData.description;
+    }
+}
+
+// Check enrollment status and update button accordingly
+async function checkEnrollmentStatus(joinBtn) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/enrollment-status/${courseId}/${userId}`);
+        const data = await response.json();
+        
+        console.log('📊 Enrollment status check:', data);
+        
+        if (data.status === 'enrolled') {
+            joinBtn.textContent = "Already Enrolled";
+            joinBtn.disabled = true;
+            joinBtn.classList.add('btn-secondary');
+        } else if (data.status === 'requested') {
+            joinBtn.textContent = `Waiting for approval (${data.enrollmentStatus})`;
+            joinBtn.disabled = true;
+            joinBtn.classList.add('btn-warning');
+        } else {
+            // Can enroll
+            joinBtn.textContent = "Join now";
+            joinBtn.addEventListener("click", enrollCourse);
+        }
+    } catch (error) {
+        console.error('Error checking enrollment status:', error);
+        // On error, allow enrollment attempt
+        joinBtn.textContent = "Join now";
+        joinBtn.addEventListener("click", enrollCourse);
     }
 }
 
@@ -127,10 +156,19 @@ async function enrollCourse() {
         return;
     }
 
+    // Disable button to prevent duplicate requests
+    const joinBtn = document.querySelector(".section-one .btn-join");
+    if (joinBtn) {
+        joinBtn.disabled = true;
+        joinBtn.textContent = "Processing...";
+    }
+
     try {
         const enrollType = courseData.open_state; // Get access state (Open or Permission)
         let endpoint = '';
         let requestData = { courseId: courseId, userId: userId };
+        
+        console.log('🎯 Enrollment attempt:', { courseId, userId, enrollType });
         
         // Determine endpoint based on access state
         if (enrollType === 'Open') {
@@ -139,8 +177,14 @@ async function enrollCourse() {
             endpoint = '/api/enroll-request'; // Request enrollment
         } else {
             alert("This course is not available for enrollment");
+            if (joinBtn) {
+                joinBtn.disabled = false;
+                joinBtn.textContent = "Join now";
+            }
             return;
         }
+
+        console.log('📤 Sending to endpoint:', endpoint, 'with data:', requestData);
 
         const response = await fetch(`http://localhost:3000${endpoint}`, {
             method: 'POST',
@@ -151,16 +195,17 @@ async function enrollCourse() {
         });
 
         const data = await response.json();
+        
+        console.log('📥 Response from server:', data);
 
         if (data.success) {
             if (enrollType === 'Open') {
                 alert("Successfully enrolled in course!");
                 // Redirect to student course view
-                window.location.href = "enter-course-from-students.html";
+                window.location.href = `enter-course-from-students.html?courseId=${courseId}`;
             } else if (enrollType === 'Permission') {
                 alert("Enrollment request sent! Waiting for tutor approval...");
                 // Change button to show waiting status
-                const joinBtn = document.querySelector(".section-one .btn-join");
                 if (joinBtn) {
                     joinBtn.textContent = "Waiting for approval";
                     joinBtn.disabled = true;
@@ -169,10 +214,20 @@ async function enrollCourse() {
             }
         } else {
             alert("Failed to enroll: " + (data.message || "Unknown error"));
+            // Re-enable button on error
+            if (joinBtn) {
+                joinBtn.disabled = false;
+                joinBtn.textContent = "Join now";
+            }
         }
     } catch (error) {
-        console.error("Error enrolling in course:", error);
+        console.error("❌ Error enrolling in course:", error);
         alert("Error enrolling in course. Please try again.");
+        // Re-enable button on error
+        if (joinBtn) {
+            joinBtn.disabled = false;
+            joinBtn.textContent = "Join now";
+        }
     }
 }
 

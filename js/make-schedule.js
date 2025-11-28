@@ -57,10 +57,16 @@ document.getElementById('scheduleForm').addEventListener('submit', async functio
     };
     
     // Validation: Check if startDate < endDate
-    const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
-    const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
+    // Parse date and time more carefully
+    const [startYear, startMonth, startDay] = formData.startDate.split('-').map(Number);
+    const [startHour, startMin] = formData.startTime.split(':').map(Number);
+    const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMin, 0);
     
-    if (startDateTime >= endDateTime) {
+    const [endYear, endMonth, endDay] = formData.endDate.split('-').map(Number);
+    const [endHour, endMin] = formData.endTime.split(':').map(Number);
+    const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMin, 0);
+    
+    if (startDateTime > endDateTime) {
         alert('Lỗi: Thời gian bắt đầu phải trước thời gian kết thúc. Vui lòng nhập lại!');
         return;
     }

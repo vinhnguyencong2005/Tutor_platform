@@ -55,16 +55,73 @@ function displayUpcomingSchedules(schedules) {
     
     // Create individual cards for each schedule
     const scheduleHTML = sortedSchedules.map(event => {
-        const startDate = new Date(event.start_date);
-        const dayName = startDate.toLocaleDateString('en-US', { weekday: 'short' });
-        const dateStr = startDate.toLocaleDateString();
-        const timeStr = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let startDateTime;
+        let endDateTime;
+        
+        // Handle different date formats for start_date
+        if (event.start_time) {
+            try {
+                // Extract date from start_date (handle both YYYY-MM-DD and ISO format)
+                let dateStr = event.start_date;
+                if (dateStr.includes('T')) {
+                    // ISO format: extract date part only
+                    dateStr = dateStr.split('T')[0];
+                }
+                
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const [hour, minute, second] = event.start_time.split(':').map(Number);
+                startDateTime = new Date(year, month - 1, day, hour, minute, second || 0);
+            } catch (e) {
+                console.error('Error parsing date/time:', event, e);
+                startDateTime = new Date(event.start_date);
+            }
+        } else {
+            startDateTime = new Date(event.start_date);
+        }
+        
+        // Handle different date formats for end_date
+        if (event.end_time) {
+            try {
+                // Extract date from end_date (handle both YYYY-MM-DD and ISO format)
+                let dateStr = event.end_date;
+                if (dateStr.includes('T')) {
+                    // ISO format: extract date part only
+                    dateStr = dateStr.split('T')[0];
+                }
+                
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const [hour, minute, second] = event.end_time.split(':').map(Number);
+                endDateTime = new Date(year, month - 1, day, hour, minute, second || 0);
+            } catch (e) {
+                console.error('Error parsing end date/time:', event, e);
+                endDateTime = new Date(event.end_date);
+            }
+        } else {
+            endDateTime = new Date(event.end_date);
+        }
+        
+        const dayName = startDateTime.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateStr = startDateTime.toLocaleDateString();
+        const startTimeStr = startDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const endTimeStr = endDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         return `
             <div class="schedule-card">
                 <div class="schedule-date-header">${dayName}, ${dateStr}</div>
                 <div class="schedule-content">
-                    <div class="schedule-time">${timeStr}</div>
+                    <div class="schedule-time">
+                        <div style="display: flex; gap: 20px; align-items: center;">
+                            <div>
+                                <div style="font-size: 12px; color: #666;">Start</div>
+                                <div style="font-weight: 600;">${startTimeStr}</div>
+                            </div>
+                            <div style="color: #ccc;">→</div>
+                            <div>
+                                <div style="font-size: 12px; color: #666;">End</div>
+                                <div style="font-weight: 600;">${endTimeStr}</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="course-item">
                         <p class="course-title"><strong>${event.course_name}</strong> - ${event.schedule_title}</p>
                         <p class="content">${event.schedule_content}</p>
