@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="./../assets/css/style.css">
     <link rel="stylesheet" href="./../assets/css/course-detail.css">
+    <link rel="stylesheet" href="./../assets/css/notification.css">
 </head>
 <body>
     
@@ -156,53 +157,21 @@
         </div>
     </div>
 
-    <!-- Section seven -->
-
+    <!-- Section seven - Forum -->
     <div class="section-seven container my-5">
-    <h3 class="inner-title mb-4">Forum</h3>
+        <h3 class="inner-title mb-4">Forum - Course Discussions</h3>
 
-    <!-- Input -->
-    <!-- <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
-      <input type="text" class="form-control border-0 rounded-pill ps-4" placeholder="Join the conversation">
-    </div> -->
-    <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
-        <input type="text" class="form-control border-0 rounded-pill ps-3" placeholder="Join the conversation">
-        <button class="btn btn-primary rounded-pill px-4">Send</button>
-    </div>
-
-    <!-- Comment 1 -->
-    <div class="comment mb-4">
-      <h6 class="fw-bold">Elon Musk</h6>
-      <p class="comment-text">
-        Awesome well learned teacher, makes one feel like they are being tutored in person,
-        this course is awesome and I will advice anyone to grab it.
-      </p>
-      <div class="reply-btn text-muted small mb-2">
-        <i class="bi bi-reply me-1"></i> Reply
-      </div>
-
-      <!-- Reply -->
-      <div class="reply ps-4 border-start ms-3">
-        <h6 class="fw-bold">Bill Gates</h6>
-        <p>I think Donald Trump should learn DSA.</p>
-        <div class="reply-btn text-muted small">
-          <i class="bi bi-reply me-1"></i> Reply
+        <!-- Forum Input Form -->
+        <div class="input-group mb-3 border rounded-pill p-2 shadow-sm">
+            <input type="text" id="forumInput" class="form-control border-0 rounded-pill ps-3" placeholder="Join the conversation">
+            <button class="btn btn-primary rounded-pill px-4" >Send</button>
         </div>
-      </div>
-    </div>
 
-    <!-- Comment 2 -->
-    <div class="comment mb-4">
-      <h6 class="fw-bold">Elon Musk</h6>
-      <p class="comment-text">
-        Awesome well learned teacher, makes one feel like they are being tutored in person,
-        this course is awesome and I will advice anyone to grab it.
-      </p>
-      <div class="reply-btn text-muted small">
-        <i class="bi bi-reply me-1"></i> Reply
-      </div>
+        <!-- Forum Questions List -->
+        <div id="forumQuestionsList">
+            <!-- Questions will be loaded here -->
+        </div>
     </div>
-  </div>
 
 
 
@@ -242,6 +211,9 @@
 
 
     <!-- Custom JS -->
+    <!-- Notification System JS -->
+    <script src="../js/notification.js"></script>
+    
     <script src="../js/enter-course-from-students.js"></script>
 </body>
 </html>
