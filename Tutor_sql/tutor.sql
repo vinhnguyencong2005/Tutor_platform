@@ -132,30 +132,36 @@ CREATE TABLE forum_thread (
 	forumID INT AUTO_INCREMENT PRIMARY KEY,
     createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	tutor_courseID INT NOT NULL,
+    userID INT not null,
     inner_body VARCHAR(2000),
-    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID)
+    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
+    foreign key (userID) references user_profile(userID)
 );
 
-INSERT INTO forum_thread (tutor_courseID, inner_body) VALUES
-(1, 'Can someone explain the real difference? They seem the same to me. When do I use one over the other?');
+INSERT INTO forum_thread (tutor_courseID, userID, inner_body) VALUES
+(1, 2345678 , 'Can someone explain the real difference? They seem the same to me. When do I use one over the other?');
 
-INSERT INTO forum_thread (tutor_courseID, inner_body) VALUES
-(2, 'When are we allowed to use it? Is it only for 0/0 or also for infinity/infinity?');
+INSERT INTO forum_thread (tutor_courseID, userID, inner_body) VALUES
+(2, 2312345, 'When are we allowed to use it? Is it only for 0/0 or also for infinity/infinity?');
 
 CREATE TABLE forum_answer (
 	forumID INT NOT NULL,
 	answerID INT AUTO_INCREMENT PRIMARY KEY,
+    userID INT not null,
     answer_body VARCHAR(2000),
-    FOREIGN KEY (forumID) REFERENCES forum_thread(forumID)
+    parent_answerID INT DEFAULT NULL,
+    createDate DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (forumID) REFERENCES forum_thread(forumID),
+    FOREIGN KEY (parent_answerID) REFERENCES forum_answer(answerID),
+    foreign key (userID) references user_profile(userID)
 );
 
-INSERT INTO forum_answer (forumID, answer_body) VALUES
-(1, 'A semaphore is a signaling mechanism, while a mutex is an exclusion mechanism. A mutex is typically used to protect a shared resource from concurrent access.'),
-(1, 'Think of it this way: a mutex is a key to a room (only one person can have it). A semaphore is a count of available permits (e.g., 5 permits for 5 empty chairs).');
+INSERT INTO forum_answer (forumID, userID, answer_body) VALUES
+(1, 2112345, 'A semaphore is a signaling mechanism, while a mutex is an exclusion mechanism. A mutex is typically used to protect a shared resource from concurrent access.'),
+(1, 2112345, 'Think of it this way: a mutex is a key to a room (only one person can have it). A semaphore is a count of available permits (e.g., 5 permits for 5 empty chairs).');
 
-INSERT INTO forum_answer (forumID, answer_body) VALUES
-(2, 'It works for both 0/0 and infinity/infinity indeterminate forms!');
-
+INSERT INTO forum_answer (forumID, userID, answer_body) VALUES
+(2, 2345678, 'It works for both 0/0 and infinity/infinity indeterminate forms!');
 CREATE TABLE log (
     tutor_courseID INT NOT NULL,
     changed_content VARCHAR(200) NOT NULL,
@@ -169,21 +175,23 @@ CREATE TABLE schedule (
     schedule_title VARCHAR(100),
     schedule_content VARCHAR(200),
     start_date DATE NOT NULL,
+    start_time TIME NOT NULL,
     end_date DATE NOT NULL,
+    end_time TIME NOT NULL,
     location VARCHAR(100),
     FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
     PRIMARY KEY (tutor_courseID, schedule_title)
 );
 
-INSERT INTO schedule (tutor_courseID, schedule_title, schedule_content, start_date, end_date, location) VALUES
+INSERT INTO schedule (tutor_courseID, schedule_title, schedule_content, start_date, start_time, end_date, end_time, location) VALUES
 -- Course 1: Advanced Operating Systems
-(1, 'Week 1: Introduction & Overview', 'Lecture and discussion about OS fundamentals, architecture, and kernel overview.', '2025-11-15', '2025-11-15', 'Room C5-201'),
-(1, 'Week 2: Process Management', 'Exploring processes, threads, and CPU scheduling basics.', '2025-11-22', '2025-11-22', 'Room A4-205'),
-(1, 'Midterm Review Session', 'Review session covering chapters 1–3 and sample problems.', '2025-12-05', '2025-12-05', 'https://meet.google.com/yey-ewmk-tqd'),
+(1, 'Week 1: Introduction & Overview', 'Lecture and discussion about OS fundamentals, architecture, and kernel overview.', '2025-11-15', '09:00:00', '2025-11-15', '11:00:00', 'Room C5-201'),
+(1, 'Week 2: Process Management', 'Exploring processes, threads, and CPU scheduling basics.', '2025-11-22', '14:00:00', '2025-11-22', '16:00:00', 'Room A4-205'),
+(1, 'Midterm Review Session', 'Review session covering chapters 1–3 and sample problems.', '2025-12-05', '10:00:00', '2025-12-05', '12:00:00', 'https://meet.google.com/yey-ewmk-tqd'),
 
 -- Course 2: Calculus 1 Final Exam Review
-(2, 'Session 1: Limits and Continuity', 'Revisiting core topics on limits, continuity, and key exam questions.', '2025-11-18', '2025-11-18', 'Room B4-301'),
-(2, 'Session 2: Derivatives and Applications', 'Review of derivative rules, optimization problems, and practical applications.', '2025-11-25', '2025-11-25', 'Room A2-104');
+(2, 'Session 1: Limits and Continuity', 'Revisiting core topics on limits, continuity, and key exam questions.', '2025-11-18', '15:00:00', '2025-11-18', '17:00:00', 'Room B4-301'),
+(2, 'Session 2: Derivatives and Applications', 'Review of derivative rules, optimization problems, and practical applications.', '2025-11-25', '13:00:00', '2025-11-25', '15:00:00', 'Room A2-104');
 
 -- This table is a queue for join request from a user to a course
 CREATE TABLE waiting_queue (
@@ -211,3 +219,19 @@ CREATE TABLE review_rating (
 INSERT INTO review_rating (tutor_courseID, userID, rating, review) VALUES
 (1, 2112345, 5, 'This course provided an in-depth understanding of operating systems. The materials were comprehensive and the instructor was very knowledgeable.'),
 (2, 2345678, 4, 'The review sessions were helpful in preparing for the final exam. Would recommend to others.');
+
+-- Notification table to store notifications for users
+CREATE TABLE notification (
+    notificationID INT AUTO_INCREMENT PRIMARY KEY,
+    userID INT NOT NULL,
+    tutor_courseID INT NOT NULL,
+    notification_type ENUM('material', 'schedule', 'announcement', 'forum') DEFAULT 'announcement',
+    message VARCHAR(500) NOT NULL,
+    related_id INT DEFAULT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userID) REFERENCES user_profile(userID),
+    FOREIGN KEY (tutor_courseID) REFERENCES tutor_course(tutor_courseID),
+    INDEX idx_user_read (userID, is_read),
+    INDEX idx_created_at (created_at)
+);
