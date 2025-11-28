@@ -191,10 +191,18 @@ class NotificationManager {
             return;
         }
         
+        console.log('📬 Rendering notifications:', this.notifications);
+        
         list.innerHTML = this.notifications.map(notif => {
             const date = new Date(notif.created_at);
             const timeStr = this.formatTime(date);
             const isUnread = notif.is_read === 0;
+            
+            console.log('📧 Notification:', { 
+                message: notif.message, 
+                type: notif.notification_type,
+                unread: isUnread
+            });
             
             return `
                 <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${notif.notificationID}">

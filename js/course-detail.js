@@ -122,15 +122,24 @@ async function checkEnrollmentStatus(joinBtn) {
         const data = await response.json();
         
         console.log('📊 Enrollment status check:', data);
+        console.log('📋 Course open_state:', courseData.open_state);
         
         if (data.status === 'enrolled') {
             joinBtn.textContent = "Already Enrolled";
             joinBtn.disabled = true;
             joinBtn.classList.add('btn-secondary');
         } else if (data.status === 'requested') {
-            joinBtn.textContent = `Waiting for approval (${data.enrollmentStatus})`;
-            joinBtn.disabled = true;
-            joinBtn.classList.add('btn-warning');
+            // Only show "Waiting for approval" if course is Permission
+            if (courseData.open_state && courseData.open_state.toLowerCase() === 'permission') {
+                joinBtn.textContent = `Waiting for approval (${data.enrollmentStatus})`;
+                joinBtn.disabled = true;
+                joinBtn.classList.add('btn-warning');
+            } else {
+                // For Open courses, if already requested, just show as waiting enrollment
+                joinBtn.textContent = "Enrollment in progress";
+                joinBtn.disabled = true;
+                joinBtn.classList.add('btn-info');
+            }
         } else {
             // Can enroll
             joinBtn.textContent = "Join now";

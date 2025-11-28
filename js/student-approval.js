@@ -22,11 +22,36 @@ class StudentApprovalManager {
             return;
         }
         
+        // Check if course is Permission type
+        if (!this.isCoursePermission()) {
+            console.log('ℹ️ This is an Open course - approval system not needed');
+            return;
+        }
+        
+        console.log('✅ This is a Permission course - loading approval system');
+        
         // Load enrollment requests
         this.loadEnrollmentRequests();
         
         // Refresh every 15 seconds
         setInterval(() => this.loadEnrollmentRequests(), 15000);
+    }
+
+    /**
+     * Check if course is Permission type
+     */
+    isCoursePermission() {
+        // Try to get open_state from window.courseData (set by enter-course-from-tutor.js)
+        if (window.courseData && window.courseData.open_state) {
+            const openState = window.courseData.open_state.toLowerCase();
+            console.log('📋 Course open_state:', openState);
+            return openState === 'permission';
+        }
+        
+        console.warn('⚠️ courseData not available yet, waiting...');
+        // If courseData not available, we'll assume it might be Permission and load anyway
+        // The updateUI will hide if there are no requests
+        return true;
     }
 
     /**

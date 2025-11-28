@@ -1,28 +1,73 @@
 // Get userID from localStorage (set during login)
 const userID = localStorage.getItem('currentUserID') || 2312345; // Default for testing
+const userRole = localStorage.getItem('currentUserRole') || 'Student'; // Get user role
 
 /**
  * Load all schedules for upcoming view
  */
 async function loadAllUpcomingSchedules() {
     try {
-        const response = await fetch(`http://localhost:3000/courses/managed/${userID}`);
-        const data = await response.json();
+        console.log('📊 Loading dashboard for:', { userID, userRole });
         
-        const courses = data.courses || data;
+        let allCourses = [];
+        
+        // Determine which courses to load based on user role
+        if (userRole === 'Lecturer' || userRole === 'Graduated') {
+            // Only managed courses
+            console.log('👨‍🏫 Loading MANAGED courses for lecturer');
+            const response = await fetch(`http://localhost:3000/courses/managed/${userID}`);
+            const data = await response.json();
+            allCourses = data.courses || data;
+        } else if (userRole === 'Senior Undergraduated') {
+            // Both managed AND enrolled courses
+            console.log('🎓 Loading BOTH managed and enrolled courses for Senior Undergraduated');
+            
+            // Get managed courses
+            const managedRes = await fetch(`http://localhost:3000/courses/managed/${userID}`);
+            const managedData = await managedRes.json();
+            const managedCourses = managedData.courses || managedData || [];
+            console.log(`  � Managed courses: ${managedCourses.length}`);
+            
+            // Get enrolled courses
+            const enrolledRes = await fetch(`http://localhost:3000/courses/enrolled/${userID}`);
+            const enrolledData = await enrolledRes.json();
+            const enrolledCourses = enrolledData.courses || enrolledData || [];
+            console.log(`  📚 Enrolled courses: ${enrolledCourses.length}`);
+            
+            // Combine both (remove duplicates by courseID)
+            const courseIds = new Set();
+            allCourses = [...managedCourses, ...enrolledCourses].filter(course => {
+                if (courseIds.has(course.tutor_courseID)) {
+                    return false;
+                }
+                courseIds.add(course.tutor_courseID);
+                return true;
+            });
+            console.log(`  ✅ Total unique courses: ${allCourses.length}`);
+        } else {
+            // Student - only enrolled courses
+            console.log('👨‍🎓 Loading ENROLLED courses for student');
+            const response = await fetch(`http://localhost:3000/courses/enrolled/${userID}`);
+            const data = await response.json();
+            allCourses = data.courses || data;
+        }
+        
+        console.log('📚 Courses found:', allCourses.length);
+        
         let allSchedules = [];
         
-        // Fetch schedules for each managed course
-        for (const course of courses) {
+        // Fetch schedules for each course
+        for (const course of allCourses) {
             try {
                 const scheduleRes = await fetch(`http://localhost:3000/api/schedule/${course.tutor_courseID}`);
                 const scheduleData = await scheduleRes.json();
                 
                 if (scheduleData.success && scheduleData.schedules) {
+                    console.log(`  📅 Course "${course.course_title || course.name}" has ${scheduleData.schedules.length} schedules`);
                     allSchedules = allSchedules.concat(
                         scheduleData.schedules.map(s => ({
                             ...s,
-                            course_name: course.name,
+                            course_name: course.course_title || course.name,
                             course_id: course.tutor_courseID
                         }))
                     );
@@ -32,6 +77,7 @@ async function loadAllUpcomingSchedules() {
             }
         }
         
+        console.log('⏰ Total schedules to display:', allSchedules.length);
         displayUpcomingSchedules(allSchedules);
     } catch (error) {
         console.error('Error loading all upcoming schedules:', error);
@@ -43,12 +89,18 @@ async function loadAllUpcomingSchedules() {
  */
 function displayUpcomingSchedules(schedules) {
     const scheduleList = document.getElementById('scheduleList');
-    if (!scheduleList) return;
+    if (!scheduleList) {
+        console.error('❌ scheduleList element not found');
+        return;
+    }
     
     if (!schedules || schedules.length === 0) {
+        console.log('📭 No schedules found');
         scheduleList.innerHTML = '<p style="text-align: center; padding: 20px;">No upcoming events.</p>';
         return;
     }
+    
+    console.log('🎯 Displaying', schedules.length, 'schedules');
     
     // Sort by start_date
     const sortedSchedules = schedules.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));

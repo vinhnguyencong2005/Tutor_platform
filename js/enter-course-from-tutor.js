@@ -36,6 +36,13 @@ function displayCourseInfo() {
     if (innerTitle) {
         innerTitle.textContent = courseData.name || courseData.course_title;
     }
+    
+    // Make course data available globally for StudentApprovalManager
+    window.courseData = courseData;
+    console.log('🔍 Course data available:', { 
+        courseId: courseData.tutor_courseID, 
+        openState: courseData.open_state 
+    });
 }
 
 // Load existing chapters
