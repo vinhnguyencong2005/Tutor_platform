@@ -11,11 +11,21 @@ let courseData = null;
 
 // Check if user owns this course (for lecturers)
 function checkCourseOwnership(course) {
-    if (!userId || (userRole !== 'Lecturer' && userRole !== 'Senior Undergraduated')) {
+    console.log('🔍 Ownership Check Debug:');
+    console.log('   userId:', userId);
+    console.log('   userRole:', userRole);
+    console.log('   course.ownerID:', course.ownerID);
+    console.log('   Comparison (==):', course.ownerID == userId);
+    console.log('   Comparison (===):', course.ownerID === userId);
+    
+    if (!userId || (userRole !== 'Lecturer' && userRole !== 'Senior Undergraduated' && userRole !== 'Graduated')) {
+        console.log('   ❌ Ownership denied: User not logged in or wrong role');
         return false;
     }
     // Check if current user is the owner
-    return course.ownerID == userId;
+    const isOwner = course.ownerID == userId;
+    console.log('   ', isOwner ? '✅ User is owner' : '❌ User is NOT owner');
+    return isOwner;
 }
 
 // Check if user is enrolled in the course
@@ -100,20 +110,28 @@ function displayPreview() {
     const innerTutor = document.querySelector(".section-one .inner-tutor");
     const joinBtn = document.querySelector(".section-one .btn-join");
     
-    if (innerTitle) innerTitle.textContent = courseData.name || courseData.course_title;
-    if (innerDesc) innerDesc.textContent = courseData.description;
+    if (innerTitle) innerTitle.textContent = courseData.name || courseData.course_title || 'Course Title';
+    if (innerDesc) innerDesc.textContent = courseData.description || 'Course description';
     if (innerTutor) innerTutor.textContent = `Created by ${courseData.tutor || 'Unknown'}, Developer and Lead Instructor`;
+    
     if (joinBtn) {
-        // Check enrollment status before showing button
-        checkEnrollmentStatus(joinBtn);
-        joinBtn.textContent = "Join now";
-        joinBtn.addEventListener("click", enrollCourse);
+        // If user is logged in, check enrollment status
+        if (userId) {
+            checkEnrollmentStatus(joinBtn);
+        } else {
+            // Not logged in - show join button that redirects to login
+            joinBtn.textContent = "Join now";
+            joinBtn.onclick = function() {
+                alert("Please log in first to enroll in this course");
+                window.location.href = "login.html";
+            };
+        }
     }
     
     // Section Three - Description
     const sectionThreeDesc = document.querySelector(".section-three .inner-desc");
     if (sectionThreeDesc) {
-        sectionThreeDesc.textContent = courseData.description;
+        sectionThreeDesc.textContent = courseData.description || 'No description available';
     }
 
     // Section Two - Load course chapters and materials
@@ -128,44 +146,50 @@ function displayPreview() {
         feedbackSection.style.display = "none"; // Hide feedback form for unenrolled users
     }
     // Initialize ratings using course-rating.js
-    initializeRating(courseId);
+    if (typeof initializeRating === 'function') {
+        initializeRating(courseId);
+    }
 }
 
 // Check enrollment status and update button accordingly
 async function checkEnrollmentStatus(joinBtn) {
     try {
-        const response = await fetch(`http://localhost:3000/api/enrollment-status/${courseId}/${userId}`);
-        const data = await response.json();
+        // Check if already enrolled using the existing API
+        const enrollmentResponse = await fetch(`http://localhost:3000/api/enrollment/${courseId}/${userId}`);
+        const enrollmentData = await enrollmentResponse.json();
         
-        console.log('📊 Enrollment status check:', data);
-        console.log('📋 Course open_state:', courseData.open_state);
-        
-        if (data.status === 'enrolled') {
+        if (enrollmentData.success && enrollmentData.enrolled) {
+            // Already enrolled - shouldn't be here, but just in case
             joinBtn.textContent = "Already Enrolled";
             joinBtn.disabled = true;
             joinBtn.classList.add('btn-secondary');
-        } else if (data.status === 'requested') {
-            // Only show "Waiting for approval" if course is Permission
-            if (courseData.open_state && courseData.open_state.toLowerCase() === 'permission') {
-                joinBtn.textContent = `Waiting for approval (${data.enrollmentStatus})`;
-                joinBtn.disabled = true;
-                joinBtn.classList.add('btn-warning');
-            } else {
-                // For Open courses, if already requested, just show as waiting enrollment
-                joinBtn.textContent = "Enrollment in progress";
-                joinBtn.disabled = true;
-                joinBtn.classList.add('btn-info');
-            }
-        } else {
-            // Can enroll
-            joinBtn.textContent = "Join now";
-            joinBtn.addEventListener("click", enrollCourse);
+            return;
         }
+        
+        // Check waiting queue status for Permission courses
+        if (courseData.open_state && courseData.open_state.toLowerCase() === 'permission') {
+            const queueResponse = await fetch(`http://localhost:3000/api/waiting-queue/${courseId}/${userId}`);
+            if (queueResponse.ok) {
+                const queueData = await queueResponse.json();
+                
+                if (queueData.success && queueData.inQueue) {
+                    joinBtn.textContent = `Waiting for approval (${queueData.status})`;
+                    joinBtn.disabled = true;
+                    joinBtn.classList.add('btn-warning');
+                    return;
+                }
+            }
+        }
+        
+        // Can enroll - set up the button
+        joinBtn.textContent = "Join now";
+        joinBtn.onclick = enrollCourse;
+        
     } catch (error) {
         console.error('Error checking enrollment status:', error);
         // On error, allow enrollment attempt
         joinBtn.textContent = "Join now";
-        joinBtn.addEventListener("click", enrollCourse);
+        joinBtn.onclick = enrollCourse;
     }
 }
 
